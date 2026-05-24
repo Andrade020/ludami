@@ -58,14 +58,14 @@ export default function AreaCard({ area }: Props) {
           </p>
         )}
         <div
-          className="font-mono mt-2.5 flex items-center gap-2"
-          style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}
+          className="font-mono mt-2 flex items-center gap-1.5"
+          style={{ fontSize: 9.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-faint)', flexWrap: 'nowrap', overflow: 'hidden' }}
         >
-          <span>{String(itens).padStart(3, '0')} itens</span>
+          <span className="whitespace-nowrap">{itens} {itens === 1 ? 'item' : 'itens'}</span>
           <span aria-hidden="true">·</span>
-          <span>{String(membros).padStart(2, '0')} pessoas</span>
+          <span className="whitespace-nowrap">{membros} {membros === 1 ? 'pessoa' : 'pessoas'}</span>
           <span aria-hidden="true">·</span>
-          <span>{VISIBILITY_LABEL[area.visibility] ?? area.visibility}</span>
+          <span className="whitespace-nowrap">{VISIBILITY_LABEL[area.visibility] ?? area.visibility}</span>
         </div>
       </div>
     </Link>

@@ -15,36 +15,54 @@ const GREETINGS = [
   'pequenos mundos seus',
 ]
 
+const TABS = [
+  ['mine', 'Meus'],
+  ['friends', 'Amigos'],
+  ['popular', 'Popular'],
+] as const
+
+type Tab = 'mine' | 'friends' | 'popular'
+
 export default function Home({ session }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [activeAreas, setActiveAreas] = useState<Area[]>([])
   const [archivedAreas, setArchivedAreas] = useState<Area[]>([])
-  const [exploreAreas, setExploreAreas] = useState<Area[]>([])
+  const [friendsAreas, setFriendsAreas] = useState<Area[]>([])
+  const [popularAreas, setPopularAreas] = useState<Area[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-  const [tab, setTab] = useState<'mine' | 'explore'>('mine')
+  const [tab, setTab] = useState<Tab>('mine')
   const [showArchived, setShowArchived] = useState(false)
   const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)])
 
   async function loadAll() {
     setLoading(true)
-    const [{ data: profileData }, { data: memberRows }, { data: areas }] = await Promise.all([
+    const [{ data: profileData }, { data: memberRows }, { data: areas }, { data: followRows }] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', session.user.id).single(),
       supabase.from('area_members').select('area_id').eq('user_id', session.user.id),
       supabase.from('areas').select(`*, owner:profiles!areas_owner_id_fkey(id, username, avatar_color, avatar_url), link_count:links(count), member_count:area_members(count)`).order('created_at', { ascending: false }),
+      supabase.from('follows').select('following_id').eq('follower_id', session.user.id).eq('status', 'accepted'),
     ])
 
     setProfile(profileData)
     const memberAreaIds = (memberRows ?? []).map(r => r.area_id)
+    const followedIds = new Set((followRows ?? []).map(r => r.following_id))
     const enriched: Area[] = (areas ?? []).map((a: Area & { link_count: { count: number }[]; member_count: { count: number }[] }) => ({
       ...a,
       link_count: a.link_count?.[0]?.count ?? 0,
       member_count: a.member_count?.[0]?.count ?? 0,
       is_member: memberAreaIds.includes(a.id) || a.owner_id === session.user.id,
     }))
+
+    const nonMembers = enriched.filter(a => !a.is_member)
     setActiveAreas(enriched.filter(a => a.is_member && !a.is_archived))
     setArchivedAreas(enriched.filter(a => a.is_member && a.is_archived))
-    setExploreAreas(enriched.filter(a => !a.is_member))
+    setFriendsAreas(nonMembers.filter(a => followedIds.has(a.owner_id)))
+    setPopularAreas(
+      nonMembers
+        .filter(a => a.visibility === 'public')
+        .sort((a, b) => (b.member_count as number) - (a.member_count as number))
+    )
     setLoading(false)
   }
 
@@ -63,14 +81,25 @@ export default function Home({ session }: Props) {
     </button>
   )
 
-  const list = tab === 'mine' ? activeAreas : exploreAreas
+  const list = tab === 'mine' ? activeAreas : tab === 'friends' ? friendsAreas : popularAreas
+
+  const emptyTitle: Record<Tab, string> = {
+    mine:    'nenhum mundo ainda',
+    friends: 'nada dos seus amigos',
+    popular: 'nada público por aqui',
+  }
+  const emptyBody: Record<Tab, string> = {
+    mine:    'Crie o primeiro e comece a colecionar com calma.',
+    friends: 'Siga pessoas para ver os mundos delas aparecerem aqui.',
+    popular: 'Nenhum mundo público disponível no momento.',
+  }
 
   return (
     <Layout action={createButton} session={session}>
       {profile && (
         <div className="mb-6 mt-1">
           <p className="font-mono" style={{ fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}>
-            @{profile.username} · {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+            @{profile.username} · {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')}
           </p>
           <h1 className="font-display mt-2" style={{ fontSize: 36, lineHeight: 1, color: 'var(--fg)' }}>
             {greeting}
@@ -78,12 +107,12 @@ export default function Home({ session }: Props) {
         </div>
       )}
 
-      <div className="flex gap-6 mb-5" style={{ borderBottom: '1px solid var(--border)' }}>
-        {([['mine', 'Meus'], ['explore', 'Explorar']] as const).map(([k, label]) => (
+      <div className="flex gap-5 mb-5" style={{ borderBottom: '1px solid var(--border)' }}>
+        {TABS.map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
-            className="font-mono pb-2.5 transition-colors"
+            className="font-mono pb-2.5 transition-colors whitespace-nowrap"
             style={{
               fontSize: 11,
               letterSpacing: '0.14em',
@@ -106,12 +135,10 @@ export default function Home({ session }: Props) {
       ) : list.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <p className="font-display" style={{ fontSize: 28, color: 'var(--fg)', lineHeight: 1.1 }}>
-            {tab === 'mine' ? 'nenhum mundo ainda' : 'nada para explorar'}
+            {emptyTitle[tab]}
           </p>
           <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', maxWidth: 260, lineHeight: 1.5 }}>
-            {tab === 'mine'
-              ? 'Crie o primeiro e comece a colecionar com calma.'
-              : 'Siga pessoas para ver os mundos delas aparecerem aqui.'}
+            {emptyBody[tab]}
           </p>
           {tab === 'mine' && (
             <button
@@ -125,7 +152,7 @@ export default function Home({ session }: Props) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {list.map(area => <AreaCard key={area.id} area={area} />)}
           </div>
 
@@ -137,10 +164,10 @@ export default function Home({ session }: Props) {
                 style={{ fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}
               >
                 <span style={{ transform: showArchived ? 'rotate(90deg)' : 'none', transition: 'transform 120ms', display: 'inline-block' }}>›</span>
-                Arquivados · {String(archivedAreas.length).padStart(2, '0')}
+                Arquivados · {archivedAreas.length}
               </button>
               {showArchived && (
-                <div className="grid grid-cols-2 gap-3" style={{ opacity: 0.6 }}>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3" style={{ opacity: 0.6 }}>
                   {archivedAreas.map(area => <AreaCard key={area.id} area={area} />)}
                 </div>
               )}
