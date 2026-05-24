@@ -60,8 +60,8 @@ export default function Layout({ children, title, back, action, session }: Props
   ]
 
   return (
-    <div className="min-h-dvh bg-[#FFFBF7] flex flex-col max-w-lg mx-auto">
-      <header className="sticky top-0 z-40 bg-[#FFFBF7]/95 backdrop-blur-sm px-4 pt-safe-top pb-3 flex items-center gap-3 border-b border-black/5">
+    <div className="min-h-dvh bg-[#FAF5EE] flex flex-col max-w-lg mx-auto">
+      <header className="sticky top-0 z-40 bg-[#FAF5EE]/95 backdrop-blur-sm px-4 pt-safe-top pb-3 flex items-center gap-3 border-b border-black/5">
         {back && (
           <Link to={back} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-gray-600">
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -72,7 +72,7 @@ export default function Layout({ children, title, back, action, session }: Props
         {title ? (
           <h1 className="flex-1 text-xl font-extrabold text-gray-900 truncate">{title}</h1>
         ) : (
-          <span className="flex-1 text-2xl font-extrabold text-[#9B5DE5]">Ludami</span>
+          <span className="flex-1 text-2xl font-extrabold text-[#C8624A]">Ludami</span>
         )}
         {action}
       </header>
@@ -88,7 +88,7 @@ export default function Layout({ children, title, back, action, session }: Props
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-colors ${item.active ? 'text-[#9B5DE5]' : 'text-gray-400'}`}
+                className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-colors ${item.active ? 'text-[#C8624A]' : 'text-gray-400'}`}
               >
                 <div className="relative">
                   {item.icon}

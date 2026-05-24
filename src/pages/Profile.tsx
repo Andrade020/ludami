@@ -45,8 +45,8 @@ export default function Profile({ session }: Props) {
 
   if (!profile) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#FFFBF7]">
-        <div className="w-10 h-10 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-dvh flex items-center justify-center bg-[#FAF5EE]">
+        <div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -60,7 +60,7 @@ export default function Profile({ session }: Props) {
           disabled={uploading}
         >
           <Avatar profile={profile} size={96} rounded="rounded-3xl" />
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#7C3AED] flex items-center justify-center border-2 border-[#FFFBF7]">
+          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#C8624A] flex items-center justify-center border-2 border-[#FAF5EE]">
             {uploading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (

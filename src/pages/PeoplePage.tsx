@@ -75,10 +75,10 @@ export default function PeoplePage({ session }: Props) {
   return (
     <Layout title="Pessoas" session={session}>
       <div className="flex gap-2 mb-5">
-        <button onClick={() => setTab('search')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors ${tab === 'search' ? 'bg-[#7C3AED] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
+        <button onClick={() => setTab('search')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors ${tab === 'search' ? 'bg-[#C8624A] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
           Buscar
         </button>
-        <button onClick={() => setTab('requests')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors relative ${tab === 'requests' ? 'bg-[#7C3AED] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
+        <button onClick={() => setTab('requests')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors relative ${tab === 'requests' ? 'bg-[#C8624A] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
           Pedidos
           {requests.length > 0 && (
             <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-[#FF6B6B] rounded-full text-white text-[10px] font-bold flex items-center justify-center">
@@ -96,9 +96,9 @@ export default function PeoplePage({ session }: Props) {
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && search()}
               placeholder="Buscar por username..."
-              className="flex-1 rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#7C3AED] focus:outline-none transition-colors"
+              className="flex-1 rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
             />
-            <button onClick={search} disabled={searching} className="w-12 h-12 rounded-xl bg-[#7C3AED] text-white flex items-center justify-center disabled:opacity-60" style={{ boxShadow: '0 4px 12px #7C3AED44' }}>
+            <button onClick={search} disabled={searching} className="w-12 h-12 rounded-xl bg-[#C8624A] text-white flex items-center justify-center disabled:opacity-60" style={{ boxShadow: '0 4px 12px #C8624A44' }}>
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
               </svg>
@@ -107,8 +107,8 @@ export default function PeoplePage({ session }: Props) {
 
           {!searched && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-[#7C3AED]/10 flex items-center justify-center mb-4">
-                <svg width="36" height="36" fill="none" stroke="#7C3AED" strokeWidth={1.5} viewBox="0 0 24 24">
+              <div className="w-20 h-20 rounded-3xl bg-[#C8624A]/10 flex items-center justify-center mb-4">
+                <svg width="36" height="36" fill="none" stroke="#C8624A" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
                 </svg>
               </div>
@@ -117,7 +117,7 @@ export default function PeoplePage({ session }: Props) {
             </div>
           )}
 
-          {searching && <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin" /></div>}
+          {searching && <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" /></div>}
           {searched && !searching && results.length === 0 && <p className="text-center text-gray-400 py-16">Nenhum usuário encontrado</p>}
 
           <div className="space-y-3">
@@ -130,9 +130,9 @@ export default function PeoplePage({ session }: Props) {
                 ) : user.followStatus === 'accepted' ? (
                   <button onClick={() => cancelFollow(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-gray-100 text-gray-600">Seguindo</button>
                 ) : user.followStatus === 'pending' ? (
-                  <button onClick={() => cancelFollow(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-[#7C3AED]/10 text-[#7C3AED]">Solicitado</button>
+                  <button onClick={() => cancelFollow(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-[#C8624A]/10 text-[#C8624A]">Solicitado</button>
                 ) : (
-                  <button onClick={() => sendRequest(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-[#7C3AED] text-white" style={{ boxShadow: '0 2px 8px #7C3AED44' }}>Seguir</button>
+                  <button onClick={() => sendRequest(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-[#C8624A] text-white" style={{ boxShadow: '0 2px 8px #C8624A44' }}>Seguir</button>
                 )}
               </div>
             ))}
@@ -142,11 +142,11 @@ export default function PeoplePage({ session }: Props) {
 
       {tab === 'requests' && (
         loadingRequests ? (
-          <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" /></div>
         ) : requests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-20 h-20 rounded-3xl bg-[#7C3AED]/10 flex items-center justify-center mb-4">
-              <svg width="36" height="36" fill="none" stroke="#7C3AED" strokeWidth={1.5} viewBox="0 0 24 24">
+            <div className="w-20 h-20 rounded-3xl bg-[#C8624A]/10 flex items-center justify-center mb-4">
+              <svg width="36" height="36" fill="none" stroke="#C8624A" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
             </div>
@@ -168,7 +168,7 @@ export default function PeoplePage({ session }: Props) {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => accept(req.follower_id)} className="flex-1 py-2.5 rounded-xl bg-[#06D6A0] text-white font-bold text-sm" style={{ boxShadow: '0 2px 8px #06D6A044' }}>Aceitar</button>
+                    <button onClick={() => accept(req.follower_id)} className="flex-1 py-2.5 rounded-xl bg-[#4A9E6B] text-white font-bold text-sm" style={{ boxShadow: '0 2px 8px #4A9E6B44' }}>Aceitar</button>
                     <button onClick={() => reject(req.follower_id)} className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-bold text-sm">Recusar</button>
                   </div>
                 </div>

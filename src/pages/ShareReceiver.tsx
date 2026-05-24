@@ -51,7 +51,7 @@ export default function ShareReceiver({ session }: Props) {
   }
 
   return (
-    <div className="min-h-dvh bg-[#FFFBF7] flex flex-col">
+    <div className="min-h-dvh bg-[#FAF5EE] flex flex-col">
       <header className="px-4 pt-safe-top pb-3 flex items-center gap-3 border-b border-black/5">
         <button onClick={() => navigate('/')} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-gray-600">
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ export default function ShareReceiver({ session }: Props) {
           </>
         ) : (
           <>
-            <button onClick={() => setStep('pick')} className="text-[#9B5DE5] font-semibold text-sm mb-4">← Trocar espaço</button>
+            <button onClick={() => setStep('pick')} className="text-[#C8624A] font-semibold text-sm mb-4">← Trocar espaço</button>
             <div className="rounded-2xl p-3 text-white mb-5" style={{ backgroundColor: selectedArea?.color }}>
               <span className="font-extrabold">{selectedArea?.name}</span>
             </div>
@@ -99,13 +99,13 @@ export default function ShareReceiver({ session }: Props) {
               onChange={e => setNotes(e.target.value)}
               placeholder="O que achou? Para que serve?"
               rows={4}
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#9B5DE5] focus:outline-none transition-colors resize-none mb-4"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors resize-none mb-4"
             />
             <button
               onClick={saveLink}
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-[#9B5DE5] text-white font-extrabold text-lg disabled:opacity-60"
-              style={{ boxShadow: '0 4px 20px #9B5DE566' }}
+              className="w-full py-4 rounded-2xl bg-[#C8624A] text-white font-extrabold text-lg disabled:opacity-60"
+              style={{ boxShadow: '0 4px 20px #C8624A66' }}
             >
               {loading ? 'Salvando...' : 'Salvar'}
             </button>

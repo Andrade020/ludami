@@ -18,8 +18,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col bg-[#FFFBF7]">
-      <div className="flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-[#6B21E8] to-[#9B5DE5]" style={{ minHeight: '42dvh' }}>
+    <div className="min-h-dvh flex flex-col bg-[#FAF5EE]">
+      <div className="flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-[#A04232] to-[#C8624A]" style={{ minHeight: '42dvh' }}>
         <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center mb-5">
           <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
             <path d="M6 4H26C27.1 4 28 4.9 28 6V28L16 22L4 28V6C4 4.9 4.9 4 6 4Z" fill="white" />
@@ -27,8 +27,8 @@ export default function Login() {
         </div>
         <h1 className="text-4xl font-bold text-white tracking-tight mb-2">LUDAMI</h1>
         <p className="text-white/75 text-center text-base leading-snug max-w-xs">
-          Pare de perder o que importa.<br />
-          <span className="text-white/60 text-sm">Organize, cuide e evolua todo dia.</span>
+          Colecione o que te move.<br />
+          <span className="text-white/60 text-sm">Salve, organize e descubra todo dia.</span>
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 focus:border-[#9B5DE5] focus:outline-none transition-colors"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 focus:border-[#C8624A] focus:outline-none transition-colors"
               required
               autoComplete="email"
             />
@@ -52,7 +52,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 focus:border-[#9B5DE5] focus:outline-none transition-colors"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 focus:border-[#C8624A] focus:outline-none transition-colors"
               required
               autoComplete="current-password"
             />
@@ -61,15 +61,15 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-2xl bg-[#7C3AED] text-white font-bold text-base disabled:opacity-60 mt-2"
-            style={{ boxShadow: '0 4px 20px #7C3AED55' }}
+            className="w-full py-4 rounded-2xl bg-[#C8624A] text-white font-bold text-base disabled:opacity-60 mt-2"
+            style={{ boxShadow: '0 4px 20px #C8624A55' }}
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
         <p className="text-center text-gray-400 text-sm mt-6">
           Não tem conta?{' '}
-          <Link to="/register" className="text-[#7C3AED] font-semibold">Criar agora</Link>
+          <Link to="/register" className="text-[#C8624A] font-semibold">Criar agora</Link>
         </p>
       </div>
     </div>

@@ -78,8 +78,8 @@ export default function AreaPage({ session }: Props) {
 
   if (loading || !area) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#FFFBF7]">
-        <div className="w-10 h-10 border-4 border-[#9B5DE5] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-dvh flex items-center justify-center bg-[#FAF5EE]">
+        <div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -163,7 +163,7 @@ export default function AreaPage({ session }: Props) {
 
       {actionsOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={() => setActionsOpen(false)}>
-          <div className="w-full max-w-lg bg-[#FFFBF7] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-[#FAF5EE] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
             <h3 className="text-lg font-extrabold text-gray-900 mb-4">{area.name}</h3>
 

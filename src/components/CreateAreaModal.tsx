@@ -49,7 +49,7 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-lg bg-[#FFFBF7] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-lg bg-[#FAF5EE] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
         <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
         <h2 className="text-xl font-extrabold text-gray-900 mb-4">Criar espaço</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,7 +59,7 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="Ex: Dicas de Trabalho, Dieta, ..."
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#9B5DE5] focus:outline-none transition-colors"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
               autoFocus
               required
             />
@@ -70,7 +70,7 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Do que se trata esse espaço?"
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#9B5DE5] focus:outline-none transition-colors"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
             />
           </div>
           <div>
@@ -95,14 +95,14 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
                   key={opt.value}
                   type="button"
                   onClick={() => setVisibility(opt.value)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-colors ${visibility === opt.value ? 'border-[#9B5DE5] bg-[#9B5DE5]/5' : 'border-gray-200 bg-white'}`}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-colors ${visibility === opt.value ? 'border-[#C8624A] bg-[#C8624A]/5' : 'border-gray-200 bg-white'}`}
                 >
                   <span className="text-xl">{opt.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-bold text-sm ${visibility === opt.value ? 'text-[#9B5DE5]' : 'text-gray-800'}`}>{opt.label}</p>
+                    <p className={`font-bold text-sm ${visibility === opt.value ? 'text-[#C8624A]' : 'text-gray-800'}`}>{opt.label}</p>
                     <p className="text-xs text-gray-500">{opt.desc}</p>
                   </div>
-                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${visibility === opt.value ? 'border-[#9B5DE5] bg-[#9B5DE5]' : 'border-gray-300'}`} />
+                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${visibility === opt.value ? 'border-[#C8624A] bg-[#C8624A]' : 'border-gray-300'}`} />
                 </button>
               ))}
             </div>
