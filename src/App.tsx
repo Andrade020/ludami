@@ -21,8 +21,11 @@ function App() {
 
   if (session === undefined) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#FFFBF7]">
-        <div className="w-10 h-10 border-4 border-[#9B5DE5] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div
+          className="w-8 h-8 rounded-full animate-spin"
+          style={{ borderWidth: 2, borderStyle: 'solid', borderColor: 'var(--accent)', borderTopColor: 'transparent' }}
+        />
       </div>
     )
   }

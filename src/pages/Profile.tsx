@@ -30,14 +30,11 @@ export default function Profile({ session }: Props) {
     const file = e.target.files?.[0]
     if (!file || !profile) return
     setUploading(true)
-
     const path = `${session.user.id}/avatar`
     const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
     if (uploadErr) { setUploading(false); return }
-
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
     const avatarUrl = `${publicUrl}?t=${Date.now()}`
-
     await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', session.user.id)
     setProfile(prev => prev ? { ...prev, avatar_url: avatarUrl } : prev)
     setUploading(false)
@@ -45,61 +42,77 @@ export default function Profile({ session }: Props) {
 
   if (!profile) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#FAF5EE]">
-        <div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="w-8 h-8 rounded-full animate-spin" style={{ borderWidth: 2, borderStyle: 'solid', borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
+  const tag: React.CSSProperties = { fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-faint)', fontWeight: 500 }
+
   return (
-    <Layout title="Perfil" back="/" session={session}>
-      <div className="flex flex-col items-center py-8">
+    <Layout title="perfil" back="/" session={session}>
+      <div className="flex flex-col items-center pt-6 pb-8">
         <button
-          className="relative mb-4"
+          className="relative mb-5"
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
+          aria-label="Trocar avatar"
         >
-          <Avatar profile={profile} size={96} rounded="rounded-3xl" />
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#C8624A] flex items-center justify-center border-2 border-[#FAF5EE]">
+          <Avatar profile={profile} size={112} />
+          <div
+            className="absolute flex items-center justify-center"
+            style={{
+              bottom: -4,
+              right: -4,
+              width: 30,
+              height: 30,
+              background: 'var(--fg)',
+              color: 'var(--bg)',
+            }}
+          >
             {uploading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-3 h-3 rounded-full animate-spin" style={{ borderWidth: 1.5, borderStyle: 'solid', borderColor: 'currentColor', borderTopColor: 'transparent' }} />
             ) : (
-              <svg width="14" height="14" fill="none" stroke="white" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
               </svg>
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </button>
 
-        <h2 className="text-2xl font-bold text-gray-900">@{profile.username}</h2>
-        <p className="text-gray-400 text-sm mt-1">{session.user.email}</p>
+        <h2 className="font-display" style={{ fontSize: 36, lineHeight: 1, color: 'var(--fg)' }}>
+          @{profile.username}
+        </h2>
+        <p className="font-mono mt-2" style={tag}>{session.user.email}</p>
 
-        <div className="flex gap-10 mt-5">
+        <div className="flex gap-10 mt-7">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{followerCount}</p>
-            <p className="text-xs text-gray-400 font-medium">seguidores</p>
+            <p className="font-display" style={{ fontSize: 30, lineHeight: 1, color: 'var(--fg)' }}>{followerCount}</p>
+            <p className="font-mono mt-1.5" style={tag}>seguidores</p>
           </div>
+          <div style={{ width: 1, background: 'var(--border)' }} />
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{followingCount}</p>
-            <p className="text-xs text-gray-400 font-medium">seguindo</p>
+            <p className="font-display" style={{ fontSize: 30, lineHeight: 1, color: 'var(--fg)' }}>{followingCount}</p>
+            <p className="font-mono mt-1.5" style={tag}>seguindo</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-4 border border-gray-100 mb-4">
-        <p className="text-sm font-bold text-gray-700 mb-1">Compartilhar do YouTube</p>
-        <p className="text-sm text-gray-500 leading-relaxed">
-          No app do YouTube, toque em <strong>Compartilhar → Ludami</strong>. Se não aparecer, cole o link manualmente em qualquer espaço.
+      <div className="mt-2 mb-6" style={{ background: 'var(--card)', padding: 18 }}>
+        <p className="font-mono" style={tag}>Compartilhar do YouTube</p>
+        <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', lineHeight: 1.55 }}>
+          No app do YouTube, toque em <strong style={{ color: 'var(--fg)' }}>Compartilhar → Ludami</strong>. Se não aparecer, cole o link manualmente em qualquer mundo.
         </p>
       </div>
 
       <button
         onClick={() => supabase.auth.signOut()}
-        className="w-full py-4 rounded-2xl border-2 border-red-100 text-red-400 font-bold"
+        className="w-full py-4 font-mono transition-opacity active:opacity-70"
+        style={{ background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 500 }}
       >
-        Sair da conta
+        sair da conta
       </button>
     </Layout>
   )

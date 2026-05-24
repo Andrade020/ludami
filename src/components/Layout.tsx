@@ -2,6 +2,8 @@ import { Link, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import Lockup from './Lockup'
+import { useTheme } from '../hooks/useTheme'
 
 interface Props {
   children: React.ReactNode
@@ -14,6 +16,7 @@ interface Props {
 export default function Layout({ children, title, back, action, session }: Props) {
   const location = useLocation()
   const [pendingCount, setPendingCount] = useState(0)
+  const { mode, toggle } = useTheme()
 
   useEffect(() => {
     if (!session) return
@@ -28,77 +31,132 @@ export default function Layout({ children, title, back, action, session }: Props
   const navItems = [
     {
       to: '/',
-      label: 'Início',
+      label: 'Mundos',
       active: location.pathname === '/' || location.pathname.startsWith('/area'),
-      icon: (
-        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
-        </svg>
-      ),
     },
     {
       to: '/people',
       label: 'Pessoas',
       active: location.pathname === '/people',
       badge: pendingCount,
-      icon: (
-        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
     },
     {
       to: '/profile',
       label: 'Perfil',
       active: location.pathname === '/profile',
-      icon: (
-        <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
     },
   ]
 
   return (
-    <div className="min-h-dvh bg-[#FAF5EE] flex flex-col max-w-lg mx-auto">
-      <header className="sticky top-0 z-40 bg-[#FAF5EE]/95 backdrop-blur-sm px-4 pt-safe-top pb-3 flex items-center gap-3 border-b border-black/5">
+    <div className="min-h-dvh flex flex-col max-w-lg mx-auto" style={{ background: 'var(--bg)' }}>
+      <header
+        className="sticky top-0 z-40 px-5 pt-safe-top pb-3 flex items-center gap-3"
+        style={{ background: 'color-mix(in srgb, var(--bg) 92%, transparent)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--border)' }}
+      >
         {back && (
-          <Link to={back} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-gray-600">
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <Link
+            to={back}
+            aria-label="Voltar"
+            className="w-9 h-9 flex items-center justify-center"
+            style={{ color: 'var(--fg)' }}
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
         )}
         {title ? (
-          <h1 className="flex-1 text-xl font-extrabold text-gray-900 truncate">{title}</h1>
+          <h1 className="flex-1 font-display text-2xl truncate" style={{ color: 'var(--fg)', lineHeight: 1.1 }}>
+            {title}
+          </h1>
         ) : (
-          <span className="flex-1 text-2xl font-extrabold text-[#C8624A]">Ludami</span>
+          <div className="flex-1">
+            <Lockup markSize={24} wordSize={28} />
+          </div>
         )}
+        <button
+          onClick={toggle}
+          aria-label={mode === 'dark' ? 'Modo claro' : 'Modo escuro'}
+          className="w-9 h-9 flex items-center justify-center"
+          style={{ color: 'var(--fg-muted)' }}
+        >
+          {mode === 'dark' ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          )}
+        </button>
         {action}
       </header>
 
-      <main className={`flex-1 px-4 py-4 ${session ? 'pb-24' : ''}`}>
+      <main className={`flex-1 px-5 py-5 ${session ? 'pb-24' : ''}`}>
         {children}
       </main>
 
       {session && (
-        <nav className="fixed bottom-0 left-0 right-0 z-40 max-w-lg mx-auto bg-white/95 backdrop-blur-sm border-t border-black/5 pb-safe-bottom">
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-40 max-w-lg mx-auto pb-safe-bottom"
+          style={{ background: 'color-mix(in srgb, var(--bg) 94%, transparent)', backdropFilter: 'blur(8px)', borderTop: '1px solid var(--border)' }}
+        >
           <div className="flex">
             {navItems.map(item => (
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 transition-colors ${item.active ? 'text-[#C8624A]' : 'text-gray-400'}`}
+                className="flex-1 flex flex-col items-center justify-center py-3 gap-1 relative transition-colors"
+                style={{ color: item.active ? 'var(--fg)' : 'var(--fg-faint)' }}
               >
-                <div className="relative">
-                  {item.icon}
-                  {item.badge ? (
-                    <span className="absolute -top-1 -right-1.5 min-w-4 h-4 px-0.5 bg-[#FF6B6B] rounded-full text-white text-[9px] font-bold flex items-center justify-center">
-                      {item.badge > 9 ? '9+' : item.badge}
-                    </span>
-                  ) : null}
-                </div>
-                <span className="text-[10px] font-semibold">{item.label}</span>
+                <span
+                  className="font-mono"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    fontWeight: 600,
+                  }}
+                >
+                  {item.label}
+                </span>
+                {item.active && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 24,
+                      height: 2,
+                      background: 'var(--accent)',
+                    }}
+                  />
+                )}
+                {item.badge ? (
+                  <span
+                    className="absolute font-mono"
+                    style={{
+                      top: 6,
+                      right: '28%',
+                      minWidth: 16,
+                      height: 16,
+                      padding: '0 4px',
+                      background: 'var(--accent)',
+                      color: 'var(--bg)',
+                      borderRadius: 999,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </div>

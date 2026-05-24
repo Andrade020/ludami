@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { AREA_COLORS, randomAreaColor } from '../lib/colors'
+import { WORLD_PALETTES, GLYPH_KINDS, type GlyphKind } from '../lib/colors'
 import type { AreaVisibility } from '../lib/types'
 import type { Session } from '@supabase/supabase-js'
+import WorldGlyph from './WorldGlyph'
 
 interface Props {
   session: Session
@@ -10,19 +11,39 @@ interface Props {
   onCreated: () => void
 }
 
-const VISIBILITY_OPTIONS: { value: AreaVisibility; label: string; desc: string; icon: string }[] = [
-  { value: 'public', label: 'Público', desc: 'Qualquer pessoa pode ver e participar', icon: '🌍' },
-  { value: 'followers', label: 'Amigos', desc: 'Só quem você aceitar como seguidor', icon: '👥' },
-  { value: 'private', label: 'Privado', desc: 'Apenas membros que você adicionar', icon: '🔒' },
+const tag: React.CSSProperties = {
+  fontSize: 10,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  color: 'var(--fg-muted)',
+  fontWeight: 500,
+}
+const inputStyle: React.CSSProperties = {
+  background: 'transparent',
+  color: 'var(--fg)',
+  borderBottom: '1px solid var(--border-2)',
+  fontSize: 16,
+  outline: 'none',
+  width: '100%',
+  padding: '10px 0',
+}
+
+const VISIBILITY_OPTIONS: { value: AreaVisibility; label: string; desc: string }[] = [
+  { value: 'public',    label: 'público',  desc: 'qualquer pessoa pode ver e participar' },
+  { value: 'followers', label: 'amigos',   desc: 'só quem você aceitar como seguidor' },
+  { value: 'private',   label: 'privado',  desc: 'apenas membros que você adicionar' },
 ]
 
 export default function CreateAreaModal({ session, onClose, onCreated }: Props) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [color, setColor] = useState(randomAreaColor)
+  const [paletteIdx, setPaletteIdx] = useState(0)
+  const [glyphKind, setGlyphKind] = useState<GlyphKind>('arch')
   const [visibility, setVisibility] = useState<AreaVisibility>('public')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const palette = useMemo(() => WORLD_PALETTES[paletteIdx], [paletteIdx])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -33,13 +54,12 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
     const { data: area, error: areaErr } = await supabase.from('areas').insert({
       name: name.trim(),
       description: description.trim() || null,
-      color,
+      color: palette[0],
       owner_id: session.user.id,
       visibility,
     }).select().single()
 
-    if (areaErr || !area) { setLoading(false); setError(areaErr?.message ?? 'Erro ao criar espaço.'); return }
-
+    if (areaErr || !area) { setLoading(false); setError(areaErr?.message ?? 'Erro ao criar mundo.'); return }
     await supabase.from('area_members').insert({ area_id: area.id, user_id: session.user.id })
 
     setLoading(false)
@@ -48,74 +68,176 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-lg bg-[#FAF5EE] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-        <h2 className="text-xl font-extrabold text-gray-900 mb-4">Criar espaço</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-lg p-6 pb-safe-bottom"
+        style={{ background: 'var(--bg)', maxHeight: '92dvh', overflowY: 'auto' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ width: 32, height: 2, background: 'var(--border-2)', margin: '0 auto 22px' }} />
+        <p className="font-mono" style={tag}>Novo mundo</p>
+        <h2 className="font-display mt-1 mb-5" style={{ fontSize: 32, lineHeight: 1.05, color: 'var(--fg)' }}>
+          criar
+        </h2>
+
+        <div className="flex items-center gap-4 mb-6 p-3" style={{ background: 'var(--card)' }}>
+          <WorldGlyph size={84} palette={palette} kind={glyphKind} />
+          <div className="flex-1 min-w-0">
+            <p className="font-display truncate" style={{ fontSize: 22, color: 'var(--fg)', lineHeight: 1.1 }}>
+              {name || 'sem nome'}
+            </p>
+            <p className="font-mono mt-1" style={{ ...tag, color: 'var(--fg-faint)' }}>
+              000 itens · você
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nome</label>
+            <label className="font-mono block mb-1" style={tag}>Nome</label>
             <input
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Ex: Dicas de Trabalho, Dieta, ..."
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
+              placeholder="cozinha lenta, leitura tarde, ..."
+              style={inputStyle}
+              onFocus={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
+              onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--border-2)')}
               autoFocus
               required
             />
           </div>
+
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Descrição (opcional)</label>
+            <label className="font-mono block mb-1" style={tag}>Descrição</label>
             <input
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Do que se trata esse espaço?"
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
+              placeholder="do que se trata este mundo?"
+              style={inputStyle}
+              onFocus={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
+              onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--border-2)')}
             />
           </div>
+
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Cor</label>
-            <div className="flex gap-2 flex-wrap">
-              {AREA_COLORS.map(c => (
+            <label className="font-mono block mb-3" style={tag}>Paleta</label>
+            <div className="grid grid-cols-4 gap-2">
+              {WORLD_PALETTES.map((p, i) => (
                 <button
-                  key={c}
+                  key={i}
                   type="button"
-                  onClick={() => setColor(c)}
-                  className="w-9 h-9 rounded-full transition-transform"
-                  style={{ backgroundColor: c, outline: color === c ? `3px solid ${c}` : 'none', outlineOffset: '2px', transform: color === c ? 'scale(1.15)' : 'scale(1)' }}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Visibilidade</label>
-            <div className="space-y-2">
-              {VISIBILITY_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setVisibility(opt.value)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-colors ${visibility === opt.value ? 'border-[#C8624A] bg-[#C8624A]/5' : 'border-gray-200 bg-white'}`}
+                  onClick={() => setPaletteIdx(i)}
+                  aria-label={`Paleta ${i + 1}`}
+                  style={{
+                    aspectRatio: '1 / 1',
+                    padding: 0,
+                    background: 'transparent',
+                    outline: paletteIdx === i ? '2px solid var(--fg)' : '1px solid var(--border)',
+                    outlineOffset: paletteIdx === i ? 2 : 0,
+                  }}
                 >
-                  <span className="text-xl">{opt.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-bold text-sm ${visibility === opt.value ? 'text-[#C8624A]' : 'text-gray-800'}`}>{opt.label}</p>
-                    <p className="text-xs text-gray-500">{opt.desc}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', width: '100%', height: '100%' }}>
+                    <span style={{ background: p[0] }} />
+                    <span style={{ background: p[1] }} />
+                    <span style={{ background: p[1] }} />
+                    <span style={{ background: p[2] }} />
                   </div>
-                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${visibility === opt.value ? 'border-[#C8624A] bg-[#C8624A]' : 'border-gray-300'}`} />
                 </button>
               ))}
             </div>
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 rounded-2xl text-white font-extrabold text-lg disabled:opacity-60 transition-opacity"
-            style={{ backgroundColor: color, boxShadow: `0 4px 20px ${color}66` }}
-          >
-            {loading ? 'Criando...' : 'Criar espaço'}
-          </button>
+
+          <div>
+            <label className="font-mono block mb-3" style={tag}>Glifo</label>
+            <div className="grid grid-cols-5 gap-2">
+              {GLYPH_KINDS.map(k => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setGlyphKind(k)}
+                  aria-label={`Glifo ${k}`}
+                  style={{
+                    aspectRatio: '1 / 1',
+                    padding: 0,
+                    background: 'transparent',
+                    outline: glyphKind === k ? '2px solid var(--fg)' : '1px solid var(--border)',
+                    outlineOffset: glyphKind === k ? 2 : 0,
+                  }}
+                >
+                  <WorldGlyph
+                    palette={palette}
+                    kind={k}
+                    style={{ width: '100%', height: '100%', display: 'block' }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="font-mono block mb-3" style={tag}>Visibilidade</label>
+            <div className="space-y-2">
+              {VISIBILITY_OPTIONS.map(opt => {
+                const active = visibility === opt.value
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setVisibility(opt.value)}
+                    className="w-full flex items-center gap-3 p-3 text-left transition-colors"
+                    style={{
+                      background: active ? 'var(--card)' : 'transparent',
+                      border: `1px solid ${active ? 'var(--fg)' : 'var(--border)'}`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: '50%',
+                        border: `1px solid ${active ? 'var(--fg)' : 'var(--border-2)'}`,
+                        background: active ? 'var(--fg)' : 'transparent',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-display" style={{ fontSize: 18, color: 'var(--fg)', lineHeight: 1 }}>
+                        {opt.label}
+                      </p>
+                      <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 2 }}>
+                        {opt.desc}
+                      </p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {error && <p style={{ fontSize: 13, color: '#c25040' }}>{error}</p>}
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="font-mono flex-1 py-3.5 transition-opacity active:opacity-70"
+              style={{ background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+            >
+              cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="font-mono flex-1 py-3.5 transition-opacity active:opacity-80"
+              style={{ background: 'var(--fg)', color: 'var(--bg)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, opacity: loading ? 0.6 : 1 }}
+            >
+              {loading ? 'Criando' : 'Criar mundo'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

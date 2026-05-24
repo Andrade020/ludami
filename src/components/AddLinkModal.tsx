@@ -10,6 +10,24 @@ interface Props {
   onAdded: () => void
 }
 
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  color: 'var(--fg-muted)',
+  fontWeight: 500,
+}
+
+const inputStyle: React.CSSProperties = {
+  background: 'transparent',
+  color: 'var(--fg)',
+  borderBottom: '1px solid var(--border-2)',
+  fontSize: 15,
+  outline: 'none',
+  width: '100%',
+  padding: '10px 0',
+}
+
 export default function AddLinkModal({ areaId, session, onClose, onAdded }: Props) {
   const [url, setUrl] = useState('')
   const [notes, setNotes] = useState('')
@@ -21,9 +39,7 @@ export default function AddLinkModal({ areaId, session, onClose, onAdded }: Prop
     if (!url.trim()) return
     setLoading(true)
     setError('')
-
     const info = await fetchYouTubeInfo(url.trim())
-
     const { error: err } = await supabase.from('links').insert({
       area_id: areaId,
       url: url.trim(),
@@ -32,50 +48,71 @@ export default function AddLinkModal({ areaId, session, onClose, onAdded }: Prop
       notes: notes.trim() || null,
       added_by: session.user.id,
     })
-
     setLoading(false)
-    if (err) { setError('Erro ao salvar link.'); return }
+    if (err) { setError('Não foi possível salvar.'); return }
     onAdded()
     onClose()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-lg bg-[#FAF5EE] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
-        <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-        <h2 className="text-xl font-extrabold text-gray-900 mb-4">Adicionar link</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
+      <div
+        className="w-full max-w-lg p-6 pb-safe-bottom"
+        style={{ background: 'var(--bg)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ width: 32, height: 2, background: 'var(--border-2)', margin: '0 auto 24px' }} />
+        <p className="font-mono" style={labelStyle}>Novo link</p>
+        <h2 className="font-display mt-1 mb-5" style={{ fontSize: 30, lineHeight: 1.1, color: 'var(--fg)' }}>
+          adicionar
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">URL</label>
+            <label className="font-mono block mb-1" style={labelStyle}>URL</label>
             <input
               type="url"
               value={url}
               onChange={e => setUrl(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
+              style={inputStyle}
               autoFocus
               required
+              onFocus={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
+              onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--border-2)')}
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nota (opcional)</label>
+            <label className="font-mono block mb-1" style={labelStyle}>Nota</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="O que achou? Para que serve? Assistir depois..."
+              placeholder="O que achou. Para que serve. Assistir depois..."
               rows={3}
-              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors resize-none"
+              style={{ ...inputStyle, resize: 'none' }}
+              onFocus={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
+              onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--border-2)')}
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 rounded-2xl bg-[#C8624A] text-white font-extrabold text-lg disabled:opacity-60 transition-opacity"
-            style={{ boxShadow: '0 4px 20px #C8624A66' }}
-          >
-            {loading ? 'Salvando...' : 'Salvar link'}
-          </button>
+          {error && <p style={{ fontSize: 13, color: '#c25040' }}>{error}</p>}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="font-mono flex-1 py-3.5 transition-opacity active:opacity-70"
+              style={{ background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="font-mono flex-1 py-3.5 transition-opacity active:opacity-80"
+              style={{ background: 'var(--fg)', color: 'var(--bg)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, opacity: loading ? 0.6 : 1 }}
+            >
+              {loading ? 'Salvando' : 'Salvar'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

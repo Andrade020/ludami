@@ -14,15 +14,21 @@ export default function LinkCard({ link, canDelete, onDelete }: Props) {
 
   const videoId = extractYouTubeId(link.url)
   const thumbnail = link.thumbnail_url || (videoId ? youtubeThumbnail(videoId) : null)
+  const host = (() => { try { return new URL(link.url).hostname.replace(/^www\./, '') } catch { return '' } })()
+  const when = new Date(link.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')
 
   function openLink() {
     window.open(link.url, '_blank', 'noopener,noreferrer')
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-black/5">
+    <article style={{ background: 'var(--card)', padding: 12 }}>
       {thumbnail && !imgError && (
-        <button onClick={openLink} className="w-full block relative">
+        <button
+          onClick={openLink}
+          className="w-full block relative"
+          style={{ background: 'var(--bg-3)' }}
+        >
           <img
             src={thumbnail}
             alt={link.title ?? ''}
@@ -30,54 +36,95 @@ export default function LinkCard({ link, canDelete, onDelete }: Props) {
             onError={() => setImgError(true)}
           />
           {videoId && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 bg-black/60 rounded-full flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-            </div>
+            <span
+              className="absolute"
+              style={{
+                left: 10,
+                bottom: 10,
+                fontSize: 9.5,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                fontWeight: 600,
+                fontFamily: 'var(--font-mono)',
+                padding: '4px 8px',
+                background: 'rgba(0,0,0,0.75)',
+                color: 'var(--cream, #f3ead8)',
+              }}
+            >
+              vídeo
+            </span>
           )}
         </button>
       )}
-      <div className="p-4">
+
+      <div className="px-1 pt-3 pb-1">
         <button onClick={openLink} className="text-left w-full">
-          <h3 className="font-bold text-gray-900 leading-snug hover:text-[#9B5DE5] transition-colors">
+          <h3
+            className="font-display"
+            style={{ fontSize: 22, lineHeight: 1.15, color: 'var(--fg)' }}
+          >
             {link.title ?? link.url}
           </h3>
         </button>
+
+        <div
+          className="mt-2.5 flex items-center gap-2"
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 10,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: 'var(--fg-faint)',
+          }}
+        >
+          {host && <><span>{host}</span><span aria-hidden="true">·</span></>}
+          <span>{when}</span>
+          {link.profile?.username && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>@{link.profile.username}</span>
+            </>
+          )}
+        </div>
+
         {link.notes && (
-          <div className="mt-2">
+          <div className="mt-3">
             <button
               onClick={() => setNotesOpen(v => !v)}
-              className="flex items-center gap-1.5 text-sm text-[#9B5DE5] font-semibold"
+              className="font-mono"
+              style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 600 }}
             >
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {notesOpen ? 'Ocultar nota' : 'Ver nota'}
+              {notesOpen ? '— ocultar nota' : '+ ver nota'}
             </button>
             {notesOpen && (
-              <p className="mt-2 text-sm text-gray-600 bg-[#FFFBF7] rounded-xl p-3 leading-relaxed whitespace-pre-wrap">
+              <p
+                className="mt-2 font-display"
+                style={{
+                  fontSize: 18,
+                  fontStyle: 'italic',
+                  lineHeight: 1.45,
+                  color: 'var(--fg-muted)',
+                  borderLeft: '2px solid var(--accent)',
+                  paddingLeft: 12,
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
                 {link.notes}
               </p>
             )}
           </div>
         )}
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            {link.profile?.username ?? 'Usuário'} · {new Date(link.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-          </span>
-          {canDelete && (
-            <button
-              onClick={() => onDelete(link.id)}
-              className="text-xs text-red-400 hover:text-red-600 transition-colors font-medium"
-            >
-              Remover
-            </button>
-          )}
-        </div>
+
+        {canDelete && (
+          <button
+            onClick={() => onDelete(link.id)}
+            className="font-mono mt-3"
+            style={{ fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-faint)', fontWeight: 500 }}
+          >
+            remover
+          </button>
+        )}
       </div>
-    </div>
+    </article>
   )
 }

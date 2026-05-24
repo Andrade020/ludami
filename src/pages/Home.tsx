@@ -4,10 +4,16 @@ import { supabase } from '../lib/supabase'
 import type { Area, Profile } from '../lib/types'
 import Layout from '../components/Layout'
 import AreaCard from '../components/AreaCard'
-import Avatar from '../components/Avatar'
 import CreateAreaModal from '../components/CreateAreaModal'
 
 interface Props { session: Session }
+
+const GREETINGS = [
+  'o que voltou a importar',
+  'o que vale guardar hoje',
+  'sua coleção, devagar',
+  'pequenos mundos seus',
+]
 
 export default function Home({ session }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -18,10 +24,10 @@ export default function Home({ session }: Props) {
   const [showCreate, setShowCreate] = useState(false)
   const [tab, setTab] = useState<'mine' | 'explore'>('mine')
   const [showArchived, setShowArchived] = useState(false)
+  const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)])
 
   async function loadAll() {
     setLoading(true)
-
     const [{ data: profileData }, { data: memberRows }, { data: areas }] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', session.user.id).single(),
       supabase.from('area_members').select('area_id').eq('user_id', session.user.id),
@@ -29,7 +35,6 @@ export default function Home({ session }: Props) {
     ])
 
     setProfile(profileData)
-
     const memberAreaIds = (memberRows ?? []).map(r => r.area_id)
     const enriched: Area[] = (areas ?? []).map((a: Area & { link_count: { count: number }[]; member_count: { count: number }[] }) => ({
       ...a,
@@ -37,7 +42,6 @@ export default function Home({ session }: Props) {
       member_count: a.member_count?.[0]?.count ?? 0,
       is_member: memberAreaIds.includes(a.id),
     }))
-
     setActiveAreas(enriched.filter(a => a.is_member && !a.is_archived))
     setArchivedAreas(enriched.filter(a => a.is_member && a.is_archived))
     setExploreAreas(enriched.filter(a => !a.is_member))
@@ -49,89 +53,100 @@ export default function Home({ session }: Props) {
   const createButton = (
     <button
       onClick={() => setShowCreate(true)}
-      className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#C8624A] text-white"
-      style={{ boxShadow: '0 4px 12px #C8624A55' }}
+      aria-label="Criar mundo"
+      className="w-9 h-9 flex items-center justify-center transition-opacity active:opacity-70"
+      style={{ background: 'var(--fg)', color: 'var(--bg)' }}
     >
-      <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
       </svg>
     </button>
   )
 
+  const list = tab === 'mine' ? activeAreas : exploreAreas
+
   return (
     <Layout action={createButton} session={session}>
       {profile && (
-        <div className="flex items-center gap-3 mb-6">
-          <Avatar profile={profile} size={44} />
-          <div>
-            <p className="text-xs text-gray-400 font-medium">Bem-vindo de volta</p>
-            <p className="text-base font-bold text-gray-900">@{profile.username}</p>
-          </div>
+        <div className="mb-6 mt-1">
+          <p className="font-mono" style={{ fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}>
+            @{profile.username} · {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+          </p>
+          <h1 className="font-display mt-2" style={{ fontSize: 36, lineHeight: 1, color: 'var(--fg)' }}>
+            {greeting}
+          </h1>
         </div>
       )}
 
-      <div className="flex gap-2 mb-5">
-        <button onClick={() => setTab('mine')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors ${tab === 'mine' ? 'bg-[#C8624A] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
-          Meus Espaços
-        </button>
-        <button onClick={() => setTab('explore')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors ${tab === 'explore' ? 'bg-[#C8624A] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
-          Explorar
-        </button>
+      <div className="flex gap-6 mb-5" style={{ borderBottom: '1px solid var(--border)' }}>
+        {([['mine', 'Meus'], ['explore', 'Explorar']] as const).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setTab(k)}
+            className="font-mono pb-2.5 transition-colors"
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              color: tab === k ? 'var(--fg)' : 'var(--fg-faint)',
+              borderBottom: tab === k ? '2px solid var(--accent)' : '2px solid transparent',
+              marginBottom: -1,
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
         </div>
-      ) : tab === 'mine' ? (
+      ) : list.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="font-display" style={{ fontSize: 28, color: 'var(--fg)', lineHeight: 1.1 }}>
+            {tab === 'mine' ? 'nenhum mundo ainda' : 'nada para explorar'}
+          </p>
+          <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', maxWidth: 260, lineHeight: 1.5 }}>
+            {tab === 'mine'
+              ? 'Crie o primeiro e comece a colecionar com calma.'
+              : 'Siga pessoas para ver os mundos delas aparecerem aqui.'}
+          </p>
+          {tab === 'mine' && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="mt-6 px-5 py-3 font-mono transition-opacity active:opacity-80"
+              style={{ background: 'var(--fg)', color: 'var(--bg)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+            >
+              Criar mundo
+            </button>
+          )}
+        </div>
+      ) : (
         <>
-          {activeAreas.length === 0 && archivedAreas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-[#C8624A]/10 flex items-center justify-center mb-4">
-                <svg width="36" height="36" fill="none" stroke="#C8624A" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-              </div>
-              <p className="text-gray-700 font-bold text-lg">Nenhum espaço ainda</p>
-              <p className="text-gray-400 text-sm mt-1 mb-5">Crie seu primeiro espaço e comece a organizar</p>
-              <button onClick={() => setShowCreate(true)} className="px-6 py-3 rounded-2xl bg-[#C8624A] text-white font-bold" style={{ boxShadow: '0 4px 16px #C8624A55' }}>
-                Criar espaço
+          <div className="grid grid-cols-2 gap-3">
+            {list.map(area => <AreaCard key={area.id} area={area} />)}
+          </div>
+
+          {tab === 'mine' && archivedAreas.length > 0 && (
+            <div className="mt-8">
+              <button
+                onClick={() => setShowArchived(v => !v)}
+                className="font-mono flex items-center gap-2 mb-3"
+                style={{ fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-faint)' }}
+              >
+                <span style={{ transform: showArchived ? 'rotate(90deg)' : 'none', transition: 'transform 120ms', display: 'inline-block' }}>›</span>
+                Arquivados · {String(archivedAreas.length).padStart(2, '0')}
               </button>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-3">
-                {activeAreas.map(area => <AreaCard key={area.id} area={area} />)}
-              </div>
-              {archivedAreas.length > 0 && (
-                <div className="mt-5">
-                  <button onClick={() => setShowArchived(v => !v)} className="flex items-center gap-2 text-sm font-semibold text-gray-400 mb-3">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" className={`transition-transform ${showArchived ? 'rotate-90' : ''}`}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                    Arquivados ({archivedAreas.length})
-                  </button>
-                  {showArchived && (
-                    <div className="space-y-3 opacity-60">
-                      {archivedAreas.map(area => <AreaCard key={area.id} area={area} />)}
-                    </div>
-                  )}
+              {showArchived && (
+                <div className="grid grid-cols-2 gap-3" style={{ opacity: 0.6 }}>
+                  {archivedAreas.map(area => <AreaCard key={area.id} area={area} />)}
                 </div>
               )}
-            </>
+            </div>
           )}
         </>
-      ) : (
-        exploreAreas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-gray-500 font-semibold">Nenhum espaço para explorar</p>
-            <p className="text-gray-400 text-sm mt-1">Siga pessoas para ver os espaços delas</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {exploreAreas.map(area => <AreaCard key={area.id} area={area} />)}
-          </div>
-        )
       )}
 
       {showCreate && <CreateAreaModal session={session} onClose={() => setShowCreate(false)} onCreated={loadAll} />}

@@ -11,6 +11,13 @@ interface UserResult extends Profile {
   followStatus: FollowStatus | 'none' | 'self'
 }
 
+const tag: React.CSSProperties = {
+  fontSize: 10.5,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  fontWeight: 600,
+}
+
 export default function PeoplePage({ session }: Props) {
   const [tab, setTab] = useState<'search' | 'requests'>('search')
   const [query, setQuery] = useState('')
@@ -38,12 +45,10 @@ export default function PeoplePage({ session }: Props) {
     if (!query.trim()) return
     setSearching(true)
     setSearched(true)
-
     const [{ data: profiles }, { data: myFollows }] = await Promise.all([
       supabase.from('profiles').select('*').ilike('username', `%${query.trim()}%`).limit(20),
       supabase.from('follows').select('following_id, status').eq('follower_id', session.user.id),
     ])
-
     const followMap = new Map((myFollows ?? []).map(f => [f.following_id, f.status as FollowStatus]))
     setResults((profiles ?? []).map(p => ({
       ...p,
@@ -56,83 +61,122 @@ export default function PeoplePage({ session }: Props) {
     await supabase.from('follows').insert({ follower_id: session.user.id, following_id: userId })
     setResults(prev => prev.map(u => u.id === userId ? { ...u, followStatus: 'pending' } : u))
   }
-
   async function cancelFollow(userId: string) {
     await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', userId)
     setResults(prev => prev.map(u => u.id === userId ? { ...u, followStatus: 'none' } : u))
   }
-
   async function accept(followerId: string) {
     await supabase.from('follows').update({ status: 'accepted' }).eq('follower_id', followerId).eq('following_id', session.user.id)
     setRequests(prev => prev.filter(r => r.follower_id !== followerId))
   }
-
   async function reject(followerId: string) {
     await supabase.from('follows').delete().eq('follower_id', followerId).eq('following_id', session.user.id)
     setRequests(prev => prev.filter(r => r.follower_id !== followerId))
   }
 
+  function ActionBtn({ kind, onClick, children }: { kind: 'primary' | 'ghost' | 'soft'; onClick: () => void; children: React.ReactNode }) {
+    const styles: Record<string, React.CSSProperties> = {
+      primary: { background: 'var(--fg)', color: 'var(--bg)' },
+      ghost:   { background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)' },
+      soft:    { background: 'var(--card)', color: 'var(--accent)' },
+    }
+    return (
+      <button
+        onClick={onClick}
+        className="font-mono px-3 py-2 transition-opacity active:opacity-80"
+        style={{ ...styles[kind], ...tag, fontSize: 10 }}
+      >
+        {children}
+      </button>
+    )
+  }
+
   return (
-    <Layout title="Pessoas" session={session}>
-      <div className="flex gap-2 mb-5">
-        <button onClick={() => setTab('search')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors ${tab === 'search' ? 'bg-[#C8624A] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
-          Buscar
-        </button>
-        <button onClick={() => setTab('requests')} className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-colors relative ${tab === 'requests' ? 'bg-[#C8624A] text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
-          Pedidos
-          {requests.length > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-[#FF6B6B] rounded-full text-white text-[10px] font-bold flex items-center justify-center">
-              {requests.length > 9 ? '9+' : requests.length}
-            </span>
-          )}
-        </button>
+    <Layout title="pessoas" session={session}>
+      <div className="flex gap-6 mb-5" style={{ borderBottom: '1px solid var(--border)' }}>
+        {([['search', 'Buscar'], ['requests', `Pedidos${requests.length ? ` · ${String(requests.length).padStart(2, '0')}` : ''}`]] as const).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setTab(k as 'search' | 'requests')}
+            className="font-mono pb-2.5 transition-colors"
+            style={{
+              ...tag,
+              fontSize: 11,
+              color: tab === k ? 'var(--fg)' : 'var(--fg-faint)',
+              borderBottom: tab === k ? '2px solid var(--accent)' : '2px solid transparent',
+              marginBottom: -1,
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {tab === 'search' && (
         <>
-          <div className="flex gap-2 mb-5">
+          <div className="flex items-end gap-3 mb-6">
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && search()}
-              placeholder="Buscar por username..."
-              className="flex-1 rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#C8624A] focus:outline-none transition-colors"
+              placeholder="@username"
+              className="flex-1"
+              style={{ background: 'transparent', color: 'var(--fg)', borderBottom: '1px solid var(--border-2)', fontSize: 16, outline: 'none', padding: '10px 0' }}
+              onFocus={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
+              onBlur={e => (e.currentTarget.style.borderBottomColor = 'var(--border-2)')}
             />
-            <button onClick={search} disabled={searching} className="w-12 h-12 rounded-xl bg-[#C8624A] text-white flex items-center justify-center disabled:opacity-60" style={{ boxShadow: '0 4px 12px #C8624A44' }}>
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
-              </svg>
+            <button
+              onClick={search}
+              disabled={searching}
+              className="font-mono px-4 py-2.5 transition-opacity active:opacity-80"
+              style={{ background: 'var(--fg)', color: 'var(--bg)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, opacity: searching ? 0.6 : 1 }}
+            >
+              buscar
             </button>
           </div>
 
           {!searched && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 rounded-3xl bg-[#C8624A]/10 flex items-center justify-center mb-4">
-                <svg width="36" height="36" fill="none" stroke="#C8624A" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
-                </svg>
-              </div>
-              <p className="text-gray-700 font-bold">Busque por username</p>
-              <p className="text-gray-400 text-sm mt-1">Encontre pessoas e siga para ver os espaços delas</p>
+            <div className="flex flex-col items-center justify-center py-14 text-center">
+              <p className="font-display" style={{ fontSize: 26, color: 'var(--fg)', lineHeight: 1.1 }}>
+                encontre pessoas
+              </p>
+              <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', maxWidth: 280, lineHeight: 1.5 }}>
+                Busque por username e siga para ver os mundos delas.
+              </p>
             </div>
           )}
 
-          {searching && <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" /></div>}
-          {searched && !searching && results.length === 0 && <p className="text-center text-gray-400 py-16">Nenhum usuário encontrado</p>}
+          {searching && (
+            <div className="flex justify-center py-12">
+              <div className="w-7 h-7 rounded-full animate-spin" style={{ borderWidth: 2, borderStyle: 'solid', borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+            </div>
+          )}
 
-          <div className="space-y-3">
+          {searched && !searching && results.length === 0 && (
+            <p className="text-center py-12 font-display" style={{ fontSize: 20, color: 'var(--fg-muted)' }}>
+              nenhum username encontrado
+            </p>
+          )}
+
+          <div>
             {results.map(user => (
-              <div key={user.id} className="bg-white rounded-2xl p-4 flex items-center gap-3 border border-gray-100">
-                <Avatar profile={user} size={48} />
-                <p className="flex-1 font-bold text-gray-900">@{user.username}</p>
+              <div
+                key={user.id}
+                className="flex items-center gap-3 py-3"
+                style={{ borderBottom: '1px solid var(--border)' }}
+              >
+                <Avatar profile={user} size={42} />
+                <p className="font-display flex-1 min-w-0 truncate" style={{ fontSize: 18, color: 'var(--fg)', lineHeight: 1.1 }}>
+                  @{user.username}
+                </p>
                 {user.followStatus === 'self' ? (
-                  <span className="text-xs text-gray-400 font-semibold">Você</span>
+                  <span className="font-mono" style={{ ...tag, fontSize: 10, color: 'var(--fg-faint)' }}>você</span>
                 ) : user.followStatus === 'accepted' ? (
-                  <button onClick={() => cancelFollow(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-gray-100 text-gray-600">Seguindo</button>
+                  <ActionBtn kind="ghost" onClick={() => cancelFollow(user.id)}>seguindo</ActionBtn>
                 ) : user.followStatus === 'pending' ? (
-                  <button onClick={() => cancelFollow(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-[#C8624A]/10 text-[#C8624A]">Solicitado</button>
+                  <ActionBtn kind="soft" onClick={() => cancelFollow(user.id)}>solicitado</ActionBtn>
                 ) : (
-                  <button onClick={() => sendRequest(user.id)} className="text-sm font-bold px-4 py-2 rounded-xl bg-[#C8624A] text-white" style={{ boxShadow: '0 2px 8px #C8624A44' }}>Seguir</button>
+                  <ActionBtn kind="primary" onClick={() => sendRequest(user.id)}>seguir</ActionBtn>
                 )}
               </div>
             ))}
@@ -142,34 +186,44 @@ export default function PeoplePage({ session }: Props) {
 
       {tab === 'requests' && (
         loadingRequests ? (
-          <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-12">
+            <div className="w-7 h-7 rounded-full animate-spin" style={{ borderWidth: 2, borderStyle: 'solid', borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+          </div>
         ) : requests.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-20 h-20 rounded-3xl bg-[#C8624A]/10 flex items-center justify-center mb-4">
-              <svg width="36" height="36" fill="none" stroke="#C8624A" strokeWidth={1.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </div>
-            <p className="text-gray-700 font-bold">Nenhum pedido pendente</p>
-            <p className="text-gray-400 text-sm mt-1">Quando alguém quiser te seguir, aparece aqui</p>
+          <div className="flex flex-col items-center justify-center py-14 text-center">
+            <p className="font-display" style={{ fontSize: 26, color: 'var(--fg)', lineHeight: 1.1 }}>
+              tudo em dia
+            </p>
+            <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', maxWidth: 260, lineHeight: 1.5 }}>
+              Quando alguém pedir pra te seguir, aparece aqui.
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div>
             {requests.map(req => {
               const follower = req.follower
               if (!follower) return null
+              const when = new Date(req.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')
               return (
-                <div key={req.follower_id} className="bg-white rounded-2xl p-4 border border-gray-100">
+                <div
+                  key={req.follower_id}
+                  className="py-4"
+                  style={{ borderBottom: '1px solid var(--border)' }}
+                >
                   <div className="flex items-center gap-3 mb-3">
-                    <Avatar profile={follower} size={48} />
+                    <Avatar profile={follower} size={42} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900">@{follower.username}</p>
-                      <p className="text-xs text-gray-400">{new Date(req.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                      <p className="font-display truncate" style={{ fontSize: 18, color: 'var(--fg)', lineHeight: 1.1 }}>
+                        @{follower.username}
+                      </p>
+                      <p className="font-mono mt-0.5" style={{ ...tag, fontSize: 9.5, color: 'var(--fg-faint)' }}>
+                        {when}
+                      </p>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => accept(req.follower_id)} className="flex-1 py-2.5 rounded-xl bg-[#4A9E6B] text-white font-bold text-sm" style={{ boxShadow: '0 2px 8px #4A9E6B44' }}>Aceitar</button>
-                    <button onClick={() => reject(req.follower_id)} className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-bold text-sm">Recusar</button>
+                    <ActionBtn kind="primary" onClick={() => accept(req.follower_id)}>aceitar</ActionBtn>
+                    <ActionBtn kind="ghost" onClick={() => reject(req.follower_id)}>recusar</ActionBtn>
                   </div>
                 </div>
               )

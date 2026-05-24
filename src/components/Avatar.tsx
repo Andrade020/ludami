@@ -6,7 +6,7 @@ interface Props {
   rounded?: string
 }
 
-export default function Avatar({ profile, size = 48, rounded = 'rounded-2xl' }: Props) {
+export default function Avatar({ profile, size = 48, rounded = '' }: Props) {
   if (profile.avatar_url) {
     return (
       <img
@@ -19,10 +19,17 @@ export default function Avatar({ profile, size = 48, rounded = 'rounded-2xl' }: 
   }
   return (
     <div
-      className={`flex items-center justify-center text-white font-extrabold flex-shrink-0 ${rounded}`}
-      style={{ backgroundColor: profile.avatar_color, width: size, height: size, fontSize: size * 0.36 }}
+      className={`flex items-center justify-center font-display flex-shrink-0 ${rounded}`}
+      style={{
+        backgroundColor: profile.avatar_color,
+        width: size,
+        height: size,
+        fontSize: size * 0.5,
+        color: 'var(--cream, #f3ead8)',
+        lineHeight: 1,
+      }}
     >
-      {profile.username[0].toUpperCase()}
+      {profile.username[0].toLowerCase()}
     </div>
   )
 }

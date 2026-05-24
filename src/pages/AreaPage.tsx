@@ -3,17 +3,27 @@ import { useParams, useNavigate } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Area, Link as LinkType } from '../lib/types'
+import { deriveWorld } from '../lib/colors'
 import Layout from '../components/Layout'
 import LinkCard from '../components/LinkCard'
+import WorldGlyph from '../components/WorldGlyph'
 import AddLinkModal from '../components/AddLinkModal'
 
 const VISIBILITY_LABEL: Record<string, string> = {
-  public: '🌍 Público',
-  followers: '👥 Amigos',
-  private: '🔒 Privado',
+  public:    'público',
+  followers: 'amigos',
+  private:   'privado',
 }
 
 interface Props { session: Session }
+
+const tag: React.CSSProperties = {
+  fontSize: 10,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  color: 'var(--fg-faint)',
+  fontWeight: 500,
+}
 
 export default function AreaPage({ session }: Props) {
   const { id } = useParams<{ id: string }>()
@@ -78,35 +88,39 @@ export default function AreaPage({ session }: Props) {
 
   if (loading || !area) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-[#FAF5EE]">
-        <div className="w-10 h-10 border-4 border-[#C8624A] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-dvh flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="w-8 h-8 rounded-full animate-spin" style={{ borderWidth: 2, borderStyle: 'solid', borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
   const isOwner = area.owner_id === session.user.id
   const ownerUsername = (area.owner as unknown as { username: string })?.username ?? 'usuário'
+  const { palette, kind } = deriveWorld(area)
 
   const headerActions = (
     <div className="flex gap-2">
       {isMember && (
         <button
           onClick={() => setShowAdd(true)}
-          className="w-10 h-10 flex items-center justify-center rounded-xl text-white"
-          style={{ backgroundColor: area.color, boxShadow: `0 4px 12px ${area.color}66` }}
+          aria-label="Adicionar link"
+          className="w-9 h-9 flex items-center justify-center transition-opacity active:opacity-70"
+          style={{ background: 'var(--fg)', color: 'var(--bg)' }}
         >
-          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
           </svg>
         </button>
       )}
       {isOwner && (
         <button
           onClick={() => { setActionsOpen(true); setConfirmDelete(false) }}
-          className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm text-gray-600"
+          aria-label="Mais opções"
+          className="w-9 h-9 flex items-center justify-center"
+          style={{ color: 'var(--fg-muted)' }}
         >
           <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-            <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+            <circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" />
           </svg>
         </button>
       )}
@@ -114,45 +128,85 @@ export default function AreaPage({ session }: Props) {
   )
 
   return (
-    <Layout title={area.name} back="/" action={headerActions} session={session}>
-      <div className="rounded-2xl p-4 mb-5 text-white" style={{ backgroundColor: area.color, boxShadow: `0 4px 20px ${area.color}55` }}>
-        {area.description && <p className="text-white/90 text-sm mb-3">{area.description}</p>}
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <span className="text-white/70 text-xs">por @{ownerUsername}</span>
-            <span className="ml-2 text-white/60 text-xs">{VISIBILITY_LABEL[area.visibility]}</span>
-            {area.is_archived && <span className="ml-2 text-white/60 text-xs">· Arquivado</span>}
+    <Layout title="" back="/" action={headerActions} session={session}>
+      <div className="mb-7">
+        <div className="flex items-start gap-4">
+          <WorldGlyph size={84} palette={palette} kind={kind} />
+          <div className="flex-1 min-w-0 pt-1">
+            <h1 className="font-display" style={{ fontSize: 30, lineHeight: 1.05, color: 'var(--fg)' }}>
+              {area.name}
+            </h1>
+            <div className="font-mono mt-1.5 flex items-center gap-2 flex-wrap" style={tag}>
+              <span>@{ownerUsername}</span>
+              <span aria-hidden="true">·</span>
+              <span>{VISIBILITY_LABEL[area.visibility] ?? area.visibility}</span>
+              {area.is_archived && (<><span aria-hidden="true">·</span><span>arquivado</span></>)}
+            </div>
           </div>
+        </div>
+
+        {area.description && (
+          <p className="mt-4" style={{ fontSize: 14.5, color: 'var(--fg-muted)', lineHeight: 1.55 }}>
+            {area.description}
+          </p>
+        )}
+
+        <div className="mt-5 flex items-center gap-3 flex-wrap">
+          <span className="font-mono" style={tag}>
+            {String(links.length).padStart(3, '0')} itens
+          </span>
+          <span aria-hidden="true" style={{ color: 'var(--fg-faint)' }}>·</span>
+          <span className="font-mono" style={tag}>{String(area.member_count ?? 0).padStart(2, '0')} pessoas</span>
+
           {!isOwner && (
-            area.visibility === 'private' && !isMember ? (
-              <span className="text-xs bg-white/20 text-white/70 px-3 py-1.5 rounded-full">Privado</span>
-            ) : isMember ? (
-              <button onClick={leaveArea} className="text-xs bg-white/20 text-white font-semibold px-3 py-1.5 rounded-full">Sair</button>
-            ) : (
-              <button onClick={joinArea} disabled={joining} className="text-xs bg-white text-gray-800 font-bold px-4 py-1.5 rounded-full disabled:opacity-60">
-                {joining ? '...' : 'Participar'}
-              </button>
-            )
+            <span style={{ marginLeft: 'auto' }}>
+              {area.visibility === 'private' && !isMember ? (
+                <span className="font-mono" style={{ ...tag, color: 'var(--fg-muted)' }}>privado</span>
+              ) : isMember ? (
+                <button
+                  onClick={leaveArea}
+                  className="font-mono px-3 py-2 transition-opacity active:opacity-70"
+                  style={{ background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500 }}
+                >
+                  sair
+                </button>
+              ) : (
+                <button
+                  onClick={joinArea}
+                  disabled={joining}
+                  className="font-mono px-4 py-2 transition-opacity active:opacity-80"
+                  style={{ background: 'var(--fg)', color: 'var(--bg)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+                >
+                  {joining ? '...' : 'participar'}
+                </button>
+              )}
+            </span>
           )}
         </div>
       </div>
 
+      <div style={{ height: 1, background: 'var(--border)', marginBottom: 20 }} />
+
       {links.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4" style={{ backgroundColor: `${area.color}20` }}>
-            <svg width="36" height="36" fill="none" stroke={area.color} strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-          </div>
-          <p className="text-gray-500 font-semibold">Nenhum link ainda</p>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="font-display" style={{ fontSize: 26, color: 'var(--fg)', lineHeight: 1.1 }}>
+            nada por aqui
+          </p>
+          <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', maxWidth: 240, lineHeight: 1.5 }}>
+            {isMember ? 'Adicione o primeiro link e este mundo começa.' : 'Ainda nenhum item neste mundo.'}
+          </p>
           {isMember && (
-            <button onClick={() => setShowAdd(true)} className="mt-5 px-6 py-3 rounded-2xl text-white font-bold" style={{ backgroundColor: area.color, boxShadow: `0 4px 16px ${area.color}66` }}>
-              Adicionar link
+            <button
+              onClick={() => setShowAdd(true)}
+              className="mt-5 px-5 py-3 font-mono transition-opacity active:opacity-80"
+              style={{ background: 'var(--fg)', color: 'var(--bg)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+            >
+              adicionar link
             </button>
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {links.map(link => (
             <LinkCard key={link.id} link={link} canDelete={isMember && (link.added_by === session.user.id || isOwner)} onDelete={deleteLink} />
           ))}
@@ -162,39 +216,74 @@ export default function AreaPage({ session }: Props) {
       {showAdd && <AddLinkModal areaId={area.id} session={session} onClose={() => setShowAdd(false)} onAdded={loadArea} />}
 
       {actionsOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={() => setActionsOpen(false)}>
-          <div className="w-full max-w-lg bg-[#FAF5EE] rounded-t-3xl p-6 pb-safe-bottom" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-            <h3 className="text-lg font-extrabold text-gray-900 mb-4">{area.name}</h3>
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(6px)' }}
+          onClick={() => setActionsOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg p-6 pb-safe-bottom"
+            style={{ background: 'var(--bg)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ width: 32, height: 2, background: 'var(--border-2)', margin: '0 auto 22px' }} />
+            <p className="font-mono" style={{ ...tag, color: 'var(--fg-muted)' }}>{area.name}</p>
+            <h3 className="font-display mt-1 mb-5" style={{ fontSize: 26, color: 'var(--fg)', lineHeight: 1.1 }}>
+              ações do mundo
+            </h3>
 
             <button
               onClick={toggleArchive}
-              className="w-full flex items-center gap-3 p-4 rounded-2xl bg-white border border-gray-100 mb-3 text-left"
+              className="w-full flex items-center justify-between p-4 text-left transition-opacity active:opacity-80"
+              style={{ background: 'var(--card)', marginBottom: 10 }}
             >
-              <span className="text-2xl">{area.is_archived ? '📤' : '📦'}</span>
               <div>
-                <p className="font-bold text-gray-900">{area.is_archived ? 'Desarquivar espaço' : 'Arquivar espaço'}</p>
-                <p className="text-xs text-gray-400">{area.is_archived ? 'Volta para a lista principal' : 'Oculta da lista, mas não apaga'}</p>
+                <p className="font-display" style={{ fontSize: 18, color: 'var(--fg)', lineHeight: 1 }}>
+                  {area.is_archived ? 'desarquivar' : 'arquivar'}
+                </p>
+                <p className="mt-1" style={{ fontSize: 12, color: 'var(--fg-muted)' }}>
+                  {area.is_archived ? 'volta para a lista principal' : 'oculta da lista, não apaga'}
+                </p>
               </div>
+              <span style={{ color: 'var(--fg-faint)' }}>›</span>
             </button>
 
             {!confirmDelete ? (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="w-full flex items-center gap-3 p-4 rounded-2xl bg-red-50 border border-red-100 text-left"
+                className="w-full flex items-center justify-between p-4 text-left transition-opacity active:opacity-80"
+                style={{ background: 'transparent', border: '1px solid var(--border-2)' }}
               >
-                <span className="text-2xl">🗑️</span>
                 <div>
-                  <p className="font-bold text-red-600">Excluir espaço</p>
-                  <p className="text-xs text-red-400">Remove permanentemente com todos os links</p>
+                  <p className="font-display" style={{ fontSize: 18, color: '#c25040', lineHeight: 1 }}>
+                    excluir mundo
+                  </p>
+                  <p className="mt-1" style={{ fontSize: 12, color: 'var(--fg-muted)' }}>
+                    remove permanentemente, com todos os links
+                  </p>
                 </div>
+                <span style={{ color: '#c25040' }}>›</span>
               </button>
             ) : (
-              <div className="rounded-2xl bg-red-50 border border-red-200 p-4">
-                <p className="font-bold text-red-700 mb-3">Tem certeza? Essa ação não pode ser desfeita.</p>
+              <div style={{ background: 'var(--card)', padding: 18, border: '1px solid #c2504055' }}>
+                <p style={{ fontSize: 14, color: '#c25040', lineHeight: 1.45, marginBottom: 14 }}>
+                  Tem certeza? Essa ação não pode ser desfeita.
+                </p>
                 <div className="flex gap-2">
-                  <button onClick={() => setConfirmDelete(false)} className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold">Cancelar</button>
-                  <button onClick={deleteArea} className="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold">Excluir</button>
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="font-mono flex-1 py-3 transition-opacity active:opacity-70"
+                    style={{ background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+                  >
+                    cancelar
+                  </button>
+                  <button
+                    onClick={deleteArea}
+                    className="font-mono flex-1 py-3 transition-opacity active:opacity-80"
+                    style={{ background: '#c25040', color: '#fff', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+                  >
+                    excluir
+                  </button>
                 </div>
               </div>
             )}
