@@ -18,20 +18,25 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-dvh bg-[#FFFBF7] flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 rounded-3xl bg-[#9B5DE5] flex items-center justify-center mx-auto mb-4" style={{ boxShadow: '0 8px 32px #9B5DE566' }}>
-            <svg width="36" height="36" fill="none" stroke="white" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Ludami</h1>
-          <p className="text-gray-500 mt-1">Sua curadoria de links</p>
+    <div className="min-h-dvh flex flex-col bg-[#FFFBF7]">
+      <div className="flex flex-col items-center justify-center px-8 py-16 bg-gradient-to-br from-[#6B21E8] to-[#9B5DE5]" style={{ minHeight: '42dvh' }}>
+        <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center mb-5">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M6 4H26C27.1 4 28 4.9 28 6V28L16 22L4 28V6C4 4.9 4.9 4 6 4Z" fill="white" />
+          </svg>
         </div>
+        <h1 className="text-4xl font-bold text-white tracking-tight mb-2">LUDAMI</h1>
+        <p className="text-white/75 text-center text-base leading-snug max-w-xs">
+          Pare de perder o que importa.<br />
+          <span className="text-white/60 text-sm">Organize, cuide e evolua todo dia.</span>
+        </p>
+      </div>
+
+      <div className="flex-1 px-6 py-8 max-w-sm mx-auto w-full">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Entrar</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">E-mail</label>
+            <label className="block text-sm font-semibold text-gray-600 mb-1.5">E-mail</label>
             <input
               type="email"
               value={email}
@@ -42,7 +47,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Senha</label>
+            <label className="block text-sm font-semibold text-gray-600 mb-1.5">Senha</label>
             <input
               type="password"
               value={password}
@@ -56,15 +61,15 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-2xl bg-[#9B5DE5] text-white font-extrabold text-lg disabled:opacity-60 mt-2"
-            style={{ boxShadow: '0 4px 20px #9B5DE566' }}
+            className="w-full py-4 rounded-2xl bg-[#7C3AED] text-white font-bold text-base disabled:opacity-60 mt-2"
+            style={{ boxShadow: '0 4px 20px #7C3AED55' }}
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-400 text-sm mt-6">
           Não tem conta?{' '}
-          <Link to="/register" className="text-[#9B5DE5] font-semibold">Criar conta</Link>
+          <Link to="/register" className="text-[#7C3AED] font-semibold">Criar agora</Link>
         </p>
       </div>
     </div>
