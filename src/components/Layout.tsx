@@ -13,6 +13,30 @@ interface Props {
   session?: Session
 }
 
+const IconMundos = () => (
+  <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth={1.7} viewBox="0 0 24 24">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </svg>
+)
+
+const IconPessoas = () => (
+  <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth={1.7} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+)
+
+const IconPerfil = () => (
+  <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth={1.7} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+)
+
 export default function Layout({ children, title, back, action, session }: Props) {
   const location = useLocation()
   const [pendingCount, setPendingCount] = useState(0)
@@ -33,17 +57,22 @@ export default function Layout({ children, title, back, action, session }: Props
       to: '/',
       label: 'Mundos',
       active: location.pathname === '/' || location.pathname.startsWith('/area'),
+      icon: <IconMundos />,
+      badge: 0,
     },
     {
       to: '/people',
       label: 'Pessoas',
       active: location.pathname === '/people',
+      icon: <IconPessoas />,
       badge: pendingCount,
     },
     {
       to: '/profile',
       label: 'Perfil',
       active: location.pathname === '/profile',
+      icon: <IconPerfil />,
+      badge: 0,
     },
   ]
 
@@ -58,53 +87,58 @@ export default function Layout({ children, title, back, action, session }: Props
     </svg>
   )
 
-  const Badge = ({ count }: { count: number }) => (
-    <span
-      style={{
-        minWidth: 16, height: 16, padding: '0 4px',
-        background: 'var(--accent)', color: 'var(--bg)',
-        borderRadius: 999, fontSize: 9, fontWeight: 700,
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-mono)',
-      }}
-    >
-      {count > 9 ? '9+' : count}
-    </span>
-  )
-
   return (
     <div className="min-h-dvh" style={{ background: 'var(--bg)' }}>
       {session && (
         <aside
           className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-40"
-          style={{ width: 220, borderRight: '1px solid var(--border)', background: 'var(--bg)' }}
+          style={{ width: 260, borderRight: '1px solid var(--border)', background: 'var(--bg)' }}
         >
-          <div className="px-5 py-5">
-            <Lockup markSize={24} wordSize={28} />
+          <div className="px-6 pt-6 pb-5">
+            <Lockup markSize={30} wordSize={36} />
           </div>
 
-          <nav className="flex-1 flex flex-col px-3 gap-0.5 mt-1">
+          <nav className="flex-1 flex flex-col px-4 gap-0.5 mt-1">
             {navItems.map(item => (
               <Link
                 key={item.to}
                 to={item.to}
-                className="flex items-center gap-2.5 px-3 py-2.5 font-mono transition-colors"
+                className="relative flex items-center gap-3 px-3 py-3 font-mono transition-colors"
                 style={{
-                  fontSize: 11,
-                  letterSpacing: '0.14em',
+                  fontSize: 12,
+                  letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   fontWeight: 600,
                   color: item.active ? 'var(--fg)' : 'var(--fg-faint)',
                   background: item.active ? 'var(--card)' : 'transparent',
                 }}
               >
+                {item.active && (
+                  <span style={{
+                    position: 'absolute',
+                    left: 0, top: 6, bottom: 6,
+                    width: 3,
+                    background: 'var(--accent)',
+                  }} />
+                )}
+                <span style={{ flexShrink: 0 }}>{item.icon}</span>
                 {item.label}
-                {item.badge ? <Badge count={item.badge} /> : null}
+                {item.badge > 0 && (
+                  <span style={{
+                    minWidth: 18, height: 18, padding: '0 5px',
+                    background: 'var(--accent)', color: 'var(--bg)',
+                    borderRadius: 999, fontSize: 9, fontWeight: 700,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-mono)',
+                  }}>
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
 
-          <div className="px-4 py-4" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="px-5 py-4" style={{ borderTop: '1px solid var(--border)' }}>
             <button
               onClick={toggle}
               aria-label={mode === 'dark' ? 'Modo claro' : 'Modo escuro'}
@@ -117,12 +151,12 @@ export default function Layout({ children, title, back, action, session }: Props
         </aside>
       )}
 
-      <div className={`flex flex-col min-h-dvh${session ? ' md:ml-[220px]' : ''}`}>
+      <div className={`flex flex-col min-h-dvh${session ? ' md:ml-[260px]' : ''}`}>
         <header
           className="sticky top-0 z-40"
           style={{ background: 'color-mix(in srgb, var(--bg) 92%, transparent)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--border)' }}
         >
-          <div className="max-w-2xl mx-auto px-5 pt-safe-top pb-3 flex items-center gap-3">
+          <div className="max-w-4xl mx-auto px-5 pt-safe-top pb-3 flex items-center gap-3">
             {back && (
               <Link
                 to={back}
@@ -162,7 +196,7 @@ export default function Layout({ children, title, back, action, session }: Props
         </header>
 
         <main className={`flex-1${session ? ' pb-24 md:pb-0' : ''}`}>
-          <div className="max-w-2xl mx-auto px-5 py-5">
+          <div className="max-w-4xl mx-auto px-5 py-5">
             {children}
           </div>
         </main>
@@ -180,47 +214,24 @@ export default function Layout({ children, title, back, action, session }: Props
                   className="flex-1 flex flex-col items-center justify-center py-3 gap-1 relative transition-colors"
                   style={{ color: item.active ? 'var(--fg)' : 'var(--fg-faint)' }}
                 >
-                  <span
-                    className="font-mono"
-                    style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
-                  >
+                  <span className="font-mono" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}>
                     {item.label}
                   </span>
                   {item.active && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: 24,
-                        height: 2,
-                        background: 'var(--accent)',
-                      }}
-                    />
+                    <span style={{
+                      position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                      width: 24, height: 2, background: 'var(--accent)',
+                    }} />
                   )}
-                  {item.badge ? (
-                    <span
-                      className="absolute font-mono"
-                      style={{
-                        top: 6,
-                        right: '28%',
-                        minWidth: 16,
-                        height: 16,
-                        padding: '0 4px',
-                        background: 'var(--accent)',
-                        color: 'var(--bg)',
-                        borderRadius: 999,
-                        fontSize: 9,
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
+                  {item.badge > 0 && (
+                    <span className="absolute font-mono" style={{
+                      top: 6, right: '28%', minWidth: 16, height: 16, padding: '0 4px',
+                      background: 'var(--accent)', color: 'var(--bg)', borderRadius: 999,
+                      fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
                       {item.badge > 9 ? '9+' : item.badge}
                     </span>
-                  ) : null}
+                  )}
                 </Link>
               ))}
             </div>

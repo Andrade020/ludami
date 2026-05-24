@@ -101,9 +101,9 @@ export default function Profile({ session }: Props) {
       </div>
 
       <div className="mt-2 mb-6" style={{ background: 'var(--card)', padding: 18 }}>
-        <p className="font-mono" style={tag}>Compartilhar do YouTube</p>
+        <p className="font-mono" style={tag}>Compartilhar links</p>
         <p className="mt-2" style={{ fontSize: 13.5, color: 'var(--fg-muted)', lineHeight: 1.55 }}>
-          No app do YouTube, toque em <strong style={{ color: 'var(--fg)' }}>Compartilhar → Ludami</strong>. Se não aparecer, cole o link manualmente em qualquer mundo.
+          Em qualquer app, toque em <strong style={{ color: 'var(--fg)' }}>Compartilhar → Ludami</strong>. Ou cole qualquer link diretamente dentro de um mundo.
         </p>
       </div>
 
