@@ -1,0 +1,43 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
+import { supabase } from './lib/supabase'
+import Home from './pages/Home'
+import AreaPage from './pages/AreaPage'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Profile from './pages/Profile'
+import ShareReceiver from './pages/ShareReceiver'
+
+function App() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (session === undefined) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-[#FFFBF7]">
+        <div className="w-10 h-10 border-4 border-[#9B5DE5] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={session ? <Navigate to="/" /> : <Login />} />
+        <Route path="/register" element={session ? <Navigate to="/" /> : <Register />} />
+        <Route path="/" element={session ? <Home session={session} /> : <Navigate to="/login" />} />
+        <Route path="/area/:id" element={session ? <AreaPage session={session} /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={session ? <Profile session={session} /> : <Navigate to="/login" />} />
+        <Route path="/share" element={session ? <ShareReceiver session={session} /> : <Navigate to="/login" />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App
