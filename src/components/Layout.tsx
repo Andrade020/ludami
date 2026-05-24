@@ -23,7 +23,7 @@ export default function Layout({ children, title, back, action }: Props) {
         )}
         {title && <h1 className="flex-1 text-xl font-extrabold text-gray-900 truncate">{title}</h1>}
         {!title && !back && (
-          <span className="flex-1 text-2xl font-extrabold text-[#9B5DE5]">LinkSpot</span>
+          <span className="flex-1 text-2xl font-extrabold text-[#9B5DE5]">Ludami</span>
         )}
         {action}
         {isHome && (

@@ -1,4 +1,4 @@
--- LinkSpot — Schema Supabase
+-- Ludami — Schema Supabase
 -- Execute no SQL Editor do painel do Supabase
 
 -- Habilitar extensão de UUID (já disponível por padrão)

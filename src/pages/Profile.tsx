@@ -47,7 +47,7 @@ export default function Profile({ session }: Props) {
         <div className="bg-white rounded-2xl p-4 border border-gray-100">
           <p className="text-sm text-gray-500 font-semibold mb-1">Para compartilhar do YouTube</p>
           <p className="text-sm text-gray-700 leading-relaxed">
-            No app do YouTube, toque em <strong>Compartilhar → LinkSpot</strong>. Se o app não aparecer, abra o link aqui e toque em <strong>Adicionar link</strong>.
+            No app do YouTube, toque em <strong>Compartilhar → Ludami</strong>. Se o app não aparecer, abra o link aqui e toque em <strong>Adicionar link</strong>.
           </p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-# LinkSpot
+# Ludami
 
 Sua curadoria de links em espaços compartilhados. Salve vídeos do YouTube (e qualquer link) em espaços temáticos, adicione notas e compartilhe com quem quiser.
 
@@ -8,7 +8,7 @@ Sua curadoria de links em espaços compartilhados. Salve vídeos do YouTube (e q
 - **Salvar links** — cole qualquer URL; o título e thumbnail do YouTube são buscados automaticamente
 - **Notas por link** — adicione observações, lembretes ou contexto a cada link
 - **Rede social** — espaços públicos podem ser encontrados e seguidos por outros usuários
-- **Compartilhar do YouTube** — no celular, compartilhe diretamente do app do YouTube para o LinkSpot
+- **Compartilhar do YouTube** — no celular, compartilhe diretamente do app do YouTube para o Ludami
 - **PWA** — instale na tela inicial do iPhone ou Android sem App Store
 
 ## Instalar no celular
@@ -29,7 +29,7 @@ Sua curadoria de links em espaços compartilhados. Salve vídeos do YouTube (e q
 Após instalar o app no celular:
 1. Abra qualquer vídeo no YouTube
 2. Toque em **Compartilhar**
-3. Selecione **LinkSpot** na lista
+3. Selecione **Ludami** na lista
 4. Escolha o espaço e adicione uma nota
 
 ## Stack
@@ -47,8 +47,8 @@ Após instalar o app no celular:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/Andrade020/linkspot.git
-cd linkspot
+git clone https://github.com/Andrade020/ludami.git
+cd ludami
 
 # Instale as dependências
 npm install

@@ -39,7 +39,7 @@ export default function Register() {
             </svg>
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900">Criar conta</h1>
-          <p className="text-gray-500 mt-1">Bem-vindo ao LinkSpot!</p>
+          <p className="text-gray-500 mt-1">Bem-vindo ao Ludami!</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

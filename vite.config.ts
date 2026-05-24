@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'LinkSpot',
-        short_name: 'LinkSpot',
+        name: 'Ludami',
+        short_name: 'Ludami',
         description: 'Curadoria de links em espaços compartilhados',
         theme_color: '#9B5DE5',
         background_color: '#FFFBF7',
