@@ -49,7 +49,7 @@ export default function AddLinkModal({ areaId, session, onClose, onAdded }: Prop
       added_by: session.user.id,
     })
     setLoading(false)
-    if (err) { setError('Não foi possível salvar.'); return }
+    if (err) { setError(`Erro ${err.code}: ${err.message}`); return }
     onAdded()
     onClose()
   }
