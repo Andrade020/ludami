@@ -40,7 +40,7 @@ export default function Home({ session }: Props) {
       ...a,
       link_count: a.link_count?.[0]?.count ?? 0,
       member_count: a.member_count?.[0]?.count ?? 0,
-      is_member: memberAreaIds.includes(a.id),
+      is_member: memberAreaIds.includes(a.id) || a.owner_id === session.user.id,
     }))
     setActiveAreas(enriched.filter(a => a.is_member && !a.is_archived))
     setArchivedAreas(enriched.filter(a => a.is_member && a.is_archived))

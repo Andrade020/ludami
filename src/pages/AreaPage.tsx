@@ -48,7 +48,7 @@ export default function AreaPage({ session }: Props) {
     if (!areaData) { navigate('/'); return }
     setArea(areaData as Area)
     setLinks((linksData ?? []) as LinkType[])
-    setIsMember(!!memberRow)
+    setIsMember(!!memberRow || areaData?.owner_id === session.user.id)
     setLoading(false)
   }
 
