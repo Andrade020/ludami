@@ -17,7 +17,8 @@ export default function Register() {
     setError('')
 
     const { data, error: signUpErr } = await supabase.auth.signUp({ email, password })
-    if (signUpErr || !data.user) { setLoading(false); setError(signUpErr?.message ?? 'Erro ao criar conta.'); return }
+    if (signUpErr) { setLoading(false); setError(signUpErr.message); return }
+    if (!data.user) { setLoading(false); setError('Conta não pôde ser criada. Verifique seu e-mail ou tente outro.'); return }
 
     const { error: profileErr } = await supabase.from('profiles').insert({
       id: data.user.id,
@@ -26,7 +27,7 @@ export default function Register() {
     })
 
     setLoading(false)
-    if (profileErr) setError('Username já está em uso.')
+    if (profileErr) setError(profileErr.message)
   }
 
   return (
