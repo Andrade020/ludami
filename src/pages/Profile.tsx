@@ -8,18 +8,22 @@ interface Props { session: Session }
 
 export default function Profile({ session }: Props) {
   const [profile, setProfile] = useState<ProfileType | null>(null)
+  const [followerCount, setFollowerCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.from('profiles').select('*').eq('id', session.user.id).single().then(({ data }) => {
+    Promise.all([
+      supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', session.user.id).eq('status', 'accepted'),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', session.user.id).eq('status', 'accepted'),
+    ]).then(([{ data }, { count: followers }, { count: following }]) => {
       setProfile(data)
+      setFollowerCount(followers ?? 0)
+      setFollowingCount(following ?? 0)
       setLoading(false)
     })
   }, [session])
-
-  async function signOut() {
-    await supabase.auth.signOut()
-  }
 
   if (loading) {
     return (
@@ -30,7 +34,7 @@ export default function Profile({ session }: Props) {
   }
 
   return (
-    <Layout title="Perfil" back="/">
+    <Layout title="Perfil" back="/" session={session}>
       <div className="flex flex-col items-center py-8">
         <div
           className="w-24 h-24 rounded-3xl flex items-center justify-center text-white text-3xl font-extrabold mb-4"
@@ -40,21 +44,30 @@ export default function Profile({ session }: Props) {
         </div>
         <h2 className="text-2xl font-extrabold text-gray-900">@{profile?.username ?? 'usuário'}</h2>
         <p className="text-gray-400 text-sm mt-1">{session.user.email}</p>
-        <p className="text-gray-400 text-xs mt-1">Membro desde {new Date(profile?.created_at ?? '').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+        <div className="flex gap-8 mt-4">
+          <div className="text-center">
+            <p className="text-xl font-extrabold text-gray-900">{followerCount}</p>
+            <p className="text-xs text-gray-400">seguidores</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-extrabold text-gray-900">{followingCount}</p>
+            <p className="text-xs text-gray-400">seguindo</p>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-2 space-y-3">
         <div className="bg-white rounded-2xl p-4 border border-gray-100">
-          <p className="text-sm text-gray-500 font-semibold mb-1">Para compartilhar do YouTube</p>
+          <p className="text-sm text-gray-500 font-semibold mb-1">Compartilhar do YouTube</p>
           <p className="text-sm text-gray-700 leading-relaxed">
-            No app do YouTube, toque em <strong>Compartilhar → Ludami</strong>. Se o app não aparecer, abra o link aqui e toque em <strong>Adicionar link</strong>.
+            No app do YouTube, toque em <strong>Compartilhar → Ludami</strong>. Se não aparecer, cole o link manualmente em qualquer espaço.
           </p>
         </div>
       </div>
 
       <button
-        onClick={signOut}
-        className="w-full mt-8 py-4 rounded-2xl border-2 border-red-200 text-red-500 font-bold text-lg transition-colors hover:bg-red-50"
+        onClick={() => supabase.auth.signOut()}
+        className="w-full mt-8 py-4 rounded-2xl border-2 border-red-200 text-red-500 font-bold text-lg"
       >
         Sair da conta
       </button>

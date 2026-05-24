@@ -5,18 +5,21 @@ export interface Profile {
   created_at: string
 }
 
+export type AreaVisibility = 'public' | 'followers' | 'private'
+
 export interface Area {
   id: string
   name: string
   description: string | null
   color: string
   owner_id: string
-  is_public: boolean
+  visibility: AreaVisibility
   created_at: string
   owner?: Profile
   member_count?: number
   link_count?: number
   is_member?: boolean
+  is_archived?: boolean
 }
 
 export interface AreaMember {
@@ -36,6 +39,17 @@ export interface Link {
   added_by: string
   created_at: string
   profile?: Profile
+}
+
+export type FollowStatus = 'pending' | 'accepted'
+
+export interface Follow {
+  follower_id: string
+  following_id: string
+  status: FollowStatus
+  created_at: string
+  follower?: Profile
+  following?: Profile
 }
 
 export interface YouTubeInfo {

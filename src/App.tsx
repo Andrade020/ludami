@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
 import ShareReceiver from './pages/ShareReceiver'
+import PeoplePage from './pages/PeoplePage'
 
 function App() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
@@ -34,6 +35,8 @@ function App() {
         <Route path="/" element={session ? <Home session={session} /> : <Navigate to="/login" />} />
         <Route path="/area/:id" element={session ? <AreaPage session={session} /> : <Navigate to="/login" />} />
         <Route path="/profile" element={session ? <Profile session={session} /> : <Navigate to="/login" />} />
+        <Route path="/people" element={session ? <PeoplePage session={session} /> : <Navigate to="/login" />} />
+        <Route path="/requests" element={<Navigate to="/people" />} />
         <Route path="/share" element={session ? <ShareReceiver session={session} /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

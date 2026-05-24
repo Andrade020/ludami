@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { AREA_COLORS, randomAreaColor } from '../lib/colors'
+import type { AreaVisibility } from '../lib/types'
 import type { Session } from '@supabase/supabase-js'
 
 interface Props {
@@ -9,11 +10,17 @@ interface Props {
   onCreated: () => void
 }
 
+const VISIBILITY_OPTIONS: { value: AreaVisibility; label: string; desc: string; icon: string }[] = [
+  { value: 'public', label: 'Público', desc: 'Qualquer pessoa pode ver e participar', icon: '🌍' },
+  { value: 'followers', label: 'Amigos', desc: 'Só quem você aceitar como seguidor', icon: '👥' },
+  { value: 'private', label: 'Privado', desc: 'Apenas membros que você adicionar', icon: '🔒' },
+]
+
 export default function CreateAreaModal({ session, onClose, onCreated }: Props) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState(randomAreaColor)
-  const [isPublic, setIsPublic] = useState(true)
+  const [visibility, setVisibility] = useState<AreaVisibility>('public')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,10 +35,10 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
       description: description.trim() || null,
       color,
       owner_id: session.user.id,
-      is_public: isPublic,
+      visibility,
     }).select().single()
 
-    if (areaErr || !area) { setLoading(false); setError('Erro ao criar espaço.'); return }
+    if (areaErr || !area) { setLoading(false); setError(areaErr?.message ?? 'Erro ao criar espaço.'); return }
 
     await supabase.from('area_members').insert({ area_id: area.id, user_id: session.user.id })
 
@@ -80,15 +87,26 @@ export default function CreateAreaModal({ session, onClose, onCreated }: Props) 
               ))}
             </div>
           </div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <div
-              className={`w-12 h-6 rounded-full transition-colors relative ${isPublic ? 'bg-[#9B5DE5]' : 'bg-gray-300'}`}
-              onClick={() => setIsPublic(v => !v)}
-            >
-              <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-6' : 'translate-x-0.5'}`} />
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Visibilidade</label>
+            <div className="space-y-2">
+              {VISIBILITY_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setVisibility(opt.value)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-colors ${visibility === opt.value ? 'border-[#9B5DE5] bg-[#9B5DE5]/5' : 'border-gray-200 bg-white'}`}
+                >
+                  <span className="text-xl">{opt.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-bold text-sm ${visibility === opt.value ? 'text-[#9B5DE5]' : 'text-gray-800'}`}>{opt.label}</p>
+                    <p className="text-xs text-gray-500">{opt.desc}</p>
+                  </div>
+                  <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${visibility === opt.value ? 'border-[#9B5DE5] bg-[#9B5DE5]' : 'border-gray-300'}`} />
+                </button>
+              ))}
             </div>
-            <span className="text-sm font-semibold text-gray-700">Espaço público</span>
-          </label>
+          </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
