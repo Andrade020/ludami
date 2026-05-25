@@ -72,12 +72,20 @@ export default function Home({ session }: Props) {
     <button
       onClick={() => setShowCreate(true)}
       aria-label="Criar mundo"
-      className="w-9 h-9 flex items-center justify-center transition-opacity active:opacity-70"
-      style={{ background: 'var(--fg)', color: 'var(--bg)' }}
+      className="transition-opacity active:opacity-70"
+      style={{ background: 'var(--accent)', color: 'var(--bg)' }}
     >
-      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
-      </svg>
+      <span className="w-9 h-9 flex items-center justify-center md:hidden">
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
+        </svg>
+      </span>
+      <span className="hidden md:flex items-center gap-2 px-4 h-9 font-mono" style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700 }}>
+        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
+        </svg>
+        novo mundo
+      </span>
     </button>
   )
 
