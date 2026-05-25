@@ -12,6 +12,9 @@ export default function Profile({ session }: Props) {
   const [followerCount, setFollowerCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [uploading, setUploading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -40,6 +43,23 @@ export default function Profile({ session }: Props) {
     setUploading(false)
   }
 
+  async function shareApp() {
+    const url = window.location.origin
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Ludami', text: 'Curadoria de links em espaços compartilhados', url }) } catch {}
+    } else {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  async function deleteAccount() {
+    setDeleting(true)
+    await supabase.rpc('delete_user')
+    await supabase.auth.signOut()
+  }
+
   if (!profile) {
     return (
       <div className="min-h-dvh flex items-center justify-center" style={{ background: 'var(--bg)' }}>
@@ -62,14 +82,7 @@ export default function Profile({ session }: Props) {
           <Avatar profile={profile} size={112} />
           <div
             className="absolute flex items-center justify-center"
-            style={{
-              bottom: -4,
-              right: -4,
-              width: 30,
-              height: 30,
-              background: 'var(--fg)',
-              color: 'var(--bg)',
-            }}
+            style={{ bottom: -4, right: -4, width: 30, height: 30, background: 'var(--fg)', color: 'var(--bg)' }}
           >
             {uploading ? (
               <div className="w-3 h-3 rounded-full animate-spin" style={{ borderWidth: 1.5, borderStyle: 'solid', borderColor: 'currentColor', borderTopColor: 'transparent' }} />
@@ -98,6 +111,18 @@ export default function Profile({ session }: Props) {
             <p className="font-mono mt-1.5" style={tag}>seguindo</p>
           </div>
         </div>
+
+        <button
+          onClick={shareApp}
+          className="mt-6 flex items-center gap-2 font-mono transition-opacity active:opacity-70"
+          style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, color: copied ? 'var(--accent)' : 'var(--fg-muted)' }}
+        >
+          <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+            <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+          </svg>
+          {copied ? 'link copiado' : 'convidar para o ludami'}
+        </button>
       </div>
 
       <div className="mt-2 mb-6" style={{ background: 'var(--card)', padding: 18 }}>
@@ -114,6 +139,41 @@ export default function Profile({ session }: Props) {
       >
         sair da conta
       </button>
+
+      <div className="mt-6">
+        {!confirmDelete ? (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="w-full font-mono py-2 transition-opacity active:opacity-70"
+            style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-faint)', fontWeight: 500 }}
+          >
+            excluir conta
+          </button>
+        ) : (
+          <div style={{ border: '1px solid #c2504050', padding: 16 }}>
+            <p style={{ fontSize: 13, color: '#c25040', lineHeight: 1.5, marginBottom: 14 }}>
+              Apaga todos os seus dados permanentemente. Não tem como desfazer.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="font-mono flex-1 py-3 transition-opacity active:opacity-70"
+                style={{ background: 'transparent', color: 'var(--fg-muted)', border: '1px solid var(--border-2)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+              >
+                cancelar
+              </button>
+              <button
+                onClick={deleteAccount}
+                disabled={deleting}
+                className="font-mono flex-1 py-3 transition-opacity active:opacity-80"
+                style={{ background: '#c25040', color: '#fff', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, opacity: deleting ? 0.6 : 1 }}
+              >
+                {deleting ? 'apagando...' : 'excluir tudo'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </Layout>
   )
 }

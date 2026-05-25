@@ -105,12 +105,11 @@ export default function AreaPage({ session }: Props) {
           onClick={() => setShowAdd(true)}
           aria-label="Adicionar link"
           className="transition-opacity active:opacity-70"
-          style={{ background: 'transparent', color: 'var(--fg)', border: '1px solid var(--border-2)' }}
+          style={{ background: 'var(--fg)', color: 'var(--bg)' }}
         >
           <span className="w-9 h-9 flex items-center justify-center md:hidden">
-            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
             </svg>
           </span>
           <span className="hidden md:flex items-center gap-2 px-3 h-9 font-mono" style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}>
@@ -216,11 +215,25 @@ export default function AreaPage({ session }: Props) {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {links.map(link => (
-            <LinkCard key={link.id} link={link} canDelete={isMember && (link.added_by === session.user.id || isOwner)} onDelete={deleteLink} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {links.map(link => (
+              <LinkCard key={link.id} link={link} canDelete={isMember && (link.added_by === session.user.id || isOwner)} onDelete={deleteLink} />
+            ))}
+          </div>
+          {isMember && (
+            <button
+              onClick={() => setShowAdd(true)}
+              className="mt-4 w-full flex items-center justify-center gap-2 py-4 font-mono transition-opacity active:opacity-70"
+              style={{ border: '1px dashed var(--border-2)', color: 'var(--fg-muted)', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600 }}
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5" />
+              </svg>
+              adicionar link
+            </button>
+          )}
+        </>
       )}
 
       {showAdd && <AddLinkModal areaId={area.id} session={session} onClose={() => setShowAdd(false)} onAdded={loadArea} />}
