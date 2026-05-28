@@ -4,10 +4,12 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Area, Link as LinkType } from '../lib/types'
 import { deriveWorld } from '../lib/colors'
+import { extractYouTubeId } from '../lib/youtube'
 import Layout from '../components/Layout'
 import LinkCard from '../components/LinkCard'
 import WorldGlyph from '../components/WorldGlyph'
 import AddLinkModal from '../components/AddLinkModal'
+import VideoPlayer from '../components/VideoPlayer'
 
 const VISIBILITY_LABEL: Record<string, string> = {
   public:    'público',
@@ -34,6 +36,7 @@ export default function AreaPage({ session }: Props) {
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [playerIndex, setPlayerIndex] = useState<number | null>(null)
   const [actionsOpen, setActionsOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -95,6 +98,7 @@ export default function AreaPage({ session }: Props) {
   }
 
   const isOwner = area.owner_id === session.user.id
+  const ytLinks = links.filter(l => extractYouTubeId(l.url))
   const ownerUsername = (area.owner as unknown as { username: string })?.username ?? 'usuário'
   const { palette, kind } = deriveWorld(area)
 
@@ -218,7 +222,16 @@ export default function AreaPage({ session }: Props) {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {links.map(link => (
-              <LinkCard key={link.id} link={link} canDelete={isMember && (link.added_by === session.user.id || isOwner)} onDelete={deleteLink} />
+              <LinkCard
+                key={link.id}
+                link={link}
+                canDelete={isMember && (link.added_by === session.user.id || isOwner)}
+                onDelete={deleteLink}
+                onPlayVideo={ytLinks.length > 0 ? (l) => {
+                  const idx = ytLinks.findIndex(v => v.id === l.id)
+                  if (idx >= 0) setPlayerIndex(idx)
+                } : undefined}
+              />
             ))}
           </div>
           {isMember && (
@@ -237,6 +250,10 @@ export default function AreaPage({ session }: Props) {
       )}
 
       {showAdd && <AddLinkModal areaId={area.id} session={session} onClose={() => setShowAdd(false)} onAdded={loadArea} />}
+
+      {playerIndex !== null && (
+        <VideoPlayer links={ytLinks} initialIndex={playerIndex} onClose={() => setPlayerIndex(null)} />
+      )}
 
       {actionsOpen && (
         <div

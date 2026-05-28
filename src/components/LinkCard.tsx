@@ -6,9 +6,10 @@ interface Props {
   link: LinkType
   canDelete: boolean
   onDelete: (id: string) => void
+  onPlayVideo?: (link: LinkType) => void
 }
 
-export default function LinkCard({ link, canDelete, onDelete }: Props) {
+export default function LinkCard({ link, canDelete, onDelete, onPlayVideo }: Props) {
   const [notesOpen, setNotesOpen] = useState(false)
   const [imgError, setImgError] = useState(false)
   const [playerOpen, setPlayerOpen] = useState(false)
@@ -19,7 +20,9 @@ export default function LinkCard({ link, canDelete, onDelete }: Props) {
   const when = new Date(link.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')
 
   function handleOpen() {
-    if (videoId) {
+    if (videoId && onPlayVideo) {
+      onPlayVideo(link)
+    } else if (videoId) {
       setPlayerOpen(true)
     } else {
       window.open(link.url, '_blank', 'noopener,noreferrer')
