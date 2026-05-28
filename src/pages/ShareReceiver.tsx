@@ -24,16 +24,18 @@ export default function ShareReceiver({ session }: Props) {
     const sharedUrl = params.get('url') || params.get('text') || ''
     setUrl(sharedUrl)
 
-    supabase
-      .from('area_members')
-      .select('area_id')
-      .eq('user_id', session.user.id)
-      .then(async ({ data: memberRows }) => {
-        const ids = (memberRows ?? []).map(r => r.area_id)
-        if (ids.length === 0) return
-        const { data } = await supabase.from('areas').select('*').in('id', ids)
-        setAreas((data ?? []) as Area[])
-      })
+    ;(async () => {
+      const [{ data: memberRows }, { data: ownedAreas }] = await Promise.all([
+        supabase.from('area_members').select('area_id').eq('user_id', session.user.id),
+        supabase.from('areas').select('*').eq('owner_id', session.user.id).eq('is_archived', false),
+      ])
+      const ownedIds = new Set((ownedAreas ?? []).map(a => a.id))
+      const memberIds = (memberRows ?? []).map(r => r.area_id).filter(id => !ownedIds.has(id))
+      const memberAreas = memberIds.length > 0
+        ? ((await supabase.from('areas').select('*').in('id', memberIds).eq('is_archived', false)).data ?? [])
+        : []
+      setAreas([...(ownedAreas ?? []), ...memberAreas] as Area[])
+    })()
   }, [session])
 
   async function saveLink() {
